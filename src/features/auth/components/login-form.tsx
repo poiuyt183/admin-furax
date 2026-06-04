@@ -26,6 +26,7 @@ import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 const loginSchema = z.object({
     email: z.string().email({ message: "Please enter a valid email address." }),
@@ -71,20 +72,12 @@ export function LoginForm() {
     return (
         <Card className="w-full max-w-sm mx-auto">
             <CardHeader className="text-center">
-                <CardTitle className="text-xl font-semibold">Welcome back</CardTitle>
+                <CardTitle className="text-xl font-semibold">Chào mừng quay lại</CardTitle>
                 <CardDescription>
-                    Login to continue
+                    Đăng nhập để tiếp tục
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <div className="flex flex-col gap-3 mb-6">
-                    <Button variant="outline" type="button" className="w-full">
-                        Continue with GitHub
-                    </Button>
-                    <Button variant="outline" type="button" className="w-full">
-                        Continue with Google
-                    </Button>
-                </div>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                         <FormField
@@ -105,7 +98,7 @@ export function LoginForm() {
                             name="password"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Password</FormLabel>
+                                    <FormLabel>Mật khẩu</FormLabel>
                                     <FormControl>
                                         <Input type="password" {...field} placeholder="********" />
                                     </FormControl>
@@ -114,19 +107,11 @@ export function LoginForm() {
                             )}
                         />
                         <Button type="submit" className="w-full mt-2" disabled={isLoading}>
-                            {isLoading ? "Logging in..." : "Login"}
+                            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Đăng nhập"}
                         </Button>
                     </form>
                 </Form>
             </CardContent>
-            <CardFooter className="flex justify-center">
-                <div className="text-sm text-muted-foreground">
-                    Don&apos;t have an account?{" "}
-                    <Link href="/register" className="underline underline-offset-4 hover:text-primary text-foreground">
-                        Register
-                    </Link>
-                </div>
-            </CardFooter>
         </Card>
     );
 }
