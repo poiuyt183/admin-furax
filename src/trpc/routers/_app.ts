@@ -1,5 +1,7 @@
 import { baseProcedure, createTRPCRouter, protectedProcedure } from '../init';
 import prisma from '../../../lib/prisma';
+import { categoryRouter } from './category';
+import { productRouter } from './product';
 
 export const appRouter = createTRPCRouter({
     getUsers: protectedProcedure
@@ -10,6 +12,8 @@ export const appRouter = createTRPCRouter({
                 }
             })
         }),
+    category: categoryRouter,
+    product: productRouter,
 });
 
 // export type definition of API

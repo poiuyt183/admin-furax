@@ -27,6 +27,8 @@ import {
   Highlighter,
   Palette,
   Unlink,
+  Columns2,
+  Columns3,
 } from "lucide-react";
 
 interface ToolbarProps {
@@ -82,9 +84,8 @@ function ToolbarButton({
       type="button"
       onClick={onClick}
       title={title}
-      className={`p-1.5 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-150 shrink-0 ${
-        isActive ? "bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700" : ""
-      } ${className}`}
+      className={`p-1.5 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-150 shrink-0 ${isActive ? "bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700" : ""
+        } ${className}`}
     >
       {children}
     </button>
@@ -247,7 +248,7 @@ export default function Toolbar({
             style={{
               backgroundColor: editor.isActive("highlight")
                 ? (editor.getAttributes("highlight").color as string) ||
-                  "#fef08a"
+                "#fef08a"
                 : "#fef08a",
             }}
           />
@@ -401,6 +402,22 @@ export default function Toolbar({
       <ToolbarButton onClick={handleInsertTable} title="Insert Table (3×3)">
         <Table className="w-4 h-4" />
       </ToolbarButton>
+
+      <ToolbarDivider />
+
+      {/* Image Row */}
+      {/* <ToolbarButton
+        onClick={() => editor.chain().focus().insertImageRow(2).run()}
+        title="2 images in a row"
+      >
+        <Columns2 className="w-4 h-4" />
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() => editor.chain().focus().insertImageRow(3).run()}
+        title="3 images in a row"
+      >
+        <Columns3 className="w-4 h-4" />
+      </ToolbarButton> */}
     </div>
   );
 }

@@ -10,6 +10,8 @@ import {
   Bell,
   LogOut,
   ChevronsUpDown,
+  Package,
+  FolderTree,
   BadgeCheck,
 } from "lucide-react"
 import Link from "next/link"
@@ -42,22 +44,32 @@ import { authClient } from "@/lib/auth-client"
 
 const navMain = [
   {
-    title: "Dashboard",
+    title: "Tổng quan",
     url: "/",
     icon: LayoutDashboard,
   },
   {
-    title: "Users",
+    title: "Sản phẩm",
+    url: "/products",
+    icon: Package,
+  },
+  {
+    title: "Danh mục",
+    url: "/categories",
+    icon: FolderTree,
+  },
+  {
+    title: "Người dùng",
     url: "/users",
     icon: Users,
   },
   {
-    title: "Analytics",
+    title: "Thống kê",
     url: "/analytics",
     icon: BarChart3,
   },
   {
-    title: "Reports",
+    title: "Báo cáo",
     url: "/reports",
     icon: FileText,
   },
@@ -65,17 +77,17 @@ const navMain = [
 
 const navSecondary = [
   {
-    title: "Roles & Permissions",
+    title: "Phân quyền",
     url: "/roles",
     icon: ShieldCheck,
   },
   {
-    title: "Notifications",
+    title: "Thông báo",
     url: "/notifications",
     icon: Bell,
   },
   {
-    title: "Settings",
+    title: "Cài đặt",
     url: "/settings",
     icon: Settings,
   },
@@ -108,7 +120,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">Furax</span>
                   <span className="truncate text-xs text-muted-foreground">
-                    Admin Panel
+                    Bảng Quản Trị
                   </span>
                 </div>
               </Link>
@@ -119,7 +131,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Main</SidebarGroupLabel>
+          <SidebarGroupLabel>Hệ Thống Chính</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navMain.map((item) => (
@@ -141,7 +153,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>System</SidebarGroupLabel>
+          <SidebarGroupLabel>Cấu Hình</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navSecondary.map((item) => (
@@ -209,21 +221,21 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                 <DropdownMenuGroup>
                   <DropdownMenuItem>
                     <BadgeCheck />
-                    Account
+                    Tài khoản
                   </DropdownMenuItem>
                   <DropdownMenuItem>
                     <Settings />
-                    Settings
+                    Cài đặt
                   </DropdownMenuItem>
                   <DropdownMenuItem>
                     <Bell />
-                    Notifications
+                    Thông báo
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut />
-                  Log out
+                  Đăng xuất
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

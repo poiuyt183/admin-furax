@@ -10,25 +10,25 @@ const Page = async () => {
         <div className="aspect-video rounded-xl bg-muted/50 flex items-center justify-center">
           <div className="text-center">
             <p className="text-2xl font-bold">{users?.length ?? 0}</p>
-            <p className="text-sm text-muted-foreground">Total Users</p>
+            <p className="text-sm text-muted-foreground">Tổng số người dùng</p>
           </div>
         </div>
         <div className="aspect-video rounded-xl bg-muted/50 flex items-center justify-center">
           <div className="text-center">
             <p className="text-2xl font-bold">-</p>
-            <p className="text-sm text-muted-foreground">Active Sessions</p>
+            <p className="text-sm text-muted-foreground">Phiên hoạt động</p>
           </div>
         </div>
         <div className="aspect-video rounded-xl bg-muted/50 flex items-center justify-center">
           <div className="text-center">
             <p className="text-2xl font-bold">-</p>
-            <p className="text-sm text-muted-foreground">Reports</p>
+            <p className="text-sm text-muted-foreground">Báo cáo</p>
           </div>
         </div>
       </div>
       <div className="min-h-[60vh] flex-1 rounded-xl bg-muted/50 p-6">
-        <h2 className="text-lg font-semibold mb-4">Recent Activity</h2>
-        <p className="text-sm text-muted-foreground">No recent activity to display.</p>
+        <h2 className="text-lg font-semibold mb-4">Hoạt động gần đây</h2>
+        <p className="text-sm text-muted-foreground">Chưa có hoạt động nào gần đây.</p>
       </div>
     </div>
   )
