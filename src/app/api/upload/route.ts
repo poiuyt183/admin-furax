@@ -16,16 +16,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    const allowedTypes = [
-      "image/png",
-      "image/jpeg",
-      "image/webp",
-      "image/gif",
-    ];
+    const allowedTypes = ["image/png", "image/jpeg", "image/webp", "image/gif"];
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
         { error: "Invalid file type. Allowed: png, jpeg, webp, gif" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -47,11 +42,11 @@ export async function POST(request: Request) {
             } else {
               reject(new Error("No result from Cloudinary"));
             }
-          }
+          },
         );
 
         uploadStream.end(buffer);
-      }
+      },
     );
 
     return NextResponse.json({
@@ -62,7 +57,7 @@ export async function POST(request: Request) {
     console.error("Upload error:", error);
     return NextResponse.json(
       { error: "Upload failed. Check server logs." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

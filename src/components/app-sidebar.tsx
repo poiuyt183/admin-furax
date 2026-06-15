@@ -49,6 +49,11 @@ const navMain = [
     icon: LayoutDashboard,
   },
   {
+    title: "Trang chủ",
+    url: "/homepage",
+    icon: FileText,
+  },
+  {
     title: "Sản phẩm",
     url: "/products",
     icon: Package,
@@ -58,34 +63,9 @@ const navMain = [
     url: "/categories",
     icon: FolderTree,
   },
-  {
-    title: "Người dùng",
-    url: "/users",
-    icon: Users,
-  },
-  {
-    title: "Thống kê",
-    url: "/analytics",
-    icon: BarChart3,
-  },
-  {
-    title: "Báo cáo",
-    url: "/reports",
-    icon: FileText,
-  },
 ]
 
 const navSecondary = [
-  {
-    title: "Phân quyền",
-    url: "/roles",
-    icon: ShieldCheck,
-  },
-  {
-    title: "Thông báo",
-    url: "/notifications",
-    icon: Bell,
-  },
   {
     title: "Cài đặt",
     url: "/settings",

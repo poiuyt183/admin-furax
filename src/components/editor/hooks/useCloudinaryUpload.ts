@@ -78,7 +78,7 @@ export function useCloudinaryUpload(): UseCloudinaryUploadReturn {
         xhr.send(formData);
       });
     },
-    []
+    [],
   );
 
   return { upload, uploading, progress, error, reset };

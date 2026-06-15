@@ -311,7 +311,7 @@
 .tiptap div[data-youtube-video] iframe {
   border-radius: 0.75rem;
   width: 100%;
-  aspect-ratio: 16/9;
+  aspect-ratio: 16 / 9;
 }
 
 /* Tables */

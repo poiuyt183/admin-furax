@@ -84,8 +84,11 @@ function ToolbarButton({
       type="button"
       onClick={onClick}
       title={title}
-      className={`p-1.5 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-150 shrink-0 ${isActive ? "bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700" : ""
-        } ${className}`}
+      className={`p-1.5 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-150 shrink-0 ${
+        isActive
+          ? "bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700"
+          : ""
+      } ${className}`}
     >
       {children}
     </button>
@@ -124,10 +127,8 @@ export default function Toolbar({
       .run();
   }, [editor]);
 
-  const currentFontFamily =
-    editor.getAttributes("textStyle").fontFamily || "";
-  const currentFontSize =
-    editor.getAttributes("textStyle").fontSize || "";
+  const currentFontFamily = editor.getAttributes("textStyle").fontFamily || "";
+  const currentFontSize = editor.getAttributes("textStyle").fontSize || "";
 
   return (
     <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-gray-200 px-3 py-2 flex flex-wrap items-center gap-0.5">
@@ -248,7 +249,7 @@ export default function Toolbar({
             style={{
               backgroundColor: editor.isActive("highlight")
                 ? (editor.getAttributes("highlight").color as string) ||
-                "#fef08a"
+                  "#fef08a"
                 : "#fef08a",
             }}
           />
@@ -259,27 +260,21 @@ export default function Toolbar({
 
       {/* Headings */}
       <ToolbarButton
-        onClick={() =>
-          editor.chain().focus().toggleHeading({ level: 1 }).run()
-        }
+        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
         isActive={editor.isActive("heading", { level: 1 })}
         title="Heading 1"
       >
         <Heading1 className="w-4 h-4" />
       </ToolbarButton>
       <ToolbarButton
-        onClick={() =>
-          editor.chain().focus().toggleHeading({ level: 2 }).run()
-        }
+        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
         isActive={editor.isActive("heading", { level: 2 })}
         title="Heading 2"
       >
         <Heading2 className="w-4 h-4" />
       </ToolbarButton>
       <ToolbarButton
-        onClick={() =>
-          editor.chain().focus().toggleHeading({ level: 3 }).run()
-        }
+        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
         isActive={editor.isActive("heading", { level: 3 })}
         title="Heading 3"
       >
@@ -370,16 +365,10 @@ export default function Toolbar({
       <ToolbarDivider />
 
       {/* Insert */}
-      <ToolbarButton
-        onClick={onOpenImageModal}
-        title="Insert Image"
-      >
+      <ToolbarButton onClick={onOpenImageModal} title="Insert Image">
         <ImageIcon className="w-4 h-4" />
       </ToolbarButton>
-      <ToolbarButton
-        onClick={onOpenYoutubeModal}
-        title="Embed YouTube"
-      >
+      <ToolbarButton onClick={onOpenYoutubeModal} title="Embed YouTube">
         <Video className="w-4 h-4" />
       </ToolbarButton>
       <ToolbarButton

@@ -1,52 +1,62 @@
-"use client"
+"use client";
 
-import { type ColumnDef } from "@tanstack/react-table"
-import { format } from "date-fns"
-import { ArrowUpDown, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { type ColumnDef } from "@tanstack/react-table";
+import { format } from "date-fns";
+import { ArrowUpDown, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import Link from "next/link"
+} from "@/components/ui/dropdown-menu";
+import Link from "next/link";
 
 type ProductRow = {
-  id: string
-  name: string
-  slug: string
-  price: string | number
-  primaryImage: string | null
-  status: "DRAFT" | "PUBLISHED" | "ARCHIVED"
-  createdAt: string
-  category: { id: string; name: string } | null
-}
+  id: string;
+  name: string;
+  slug: string;
+  price: string | number;
+  primaryImage: string | null;
+  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+  createdAt: string;
+  category: { id: string; name: string } | null;
+};
 
 interface ProductColumnsOptions {
-  onDelete: (product: ProductRow) => void
-  onStatusChange: (product: ProductRow, newStatus: "DRAFT" | "PUBLISHED" | "ARCHIVED") => void
+  onDelete: (product: ProductRow) => void;
+  onStatusChange: (
+    product: ProductRow,
+    newStatus: "DRAFT" | "PUBLISHED" | "ARCHIVED",
+  ) => void;
 }
 
-export function getProductColumns({ onDelete, onStatusChange }: ProductColumnsOptions): ColumnDef<ProductRow>[] {
+export function getProductColumns({
+  onDelete,
+  onStatusChange,
+}: ProductColumnsOptions): ColumnDef<ProductRow>[] {
   return [
     {
       accessorKey: "primaryImage",
       header: "",
       cell: ({ row }) => {
-        const image = row.original.primaryImage
+        const image = row.original.primaryImage;
         return (
           <div className="size-10 rounded-lg bg-muted overflow-hidden flex-shrink-0">
             {image ? (
-              <img src={image} alt={row.original.name} className="size-full object-cover" />
+              <img
+                src={image}
+                alt={row.original.name}
+                className="size-full object-cover"
+              />
             ) : (
               <div className="size-full flex items-center justify-center text-xs text-muted-foreground font-medium">
                 {row.original.name.charAt(0).toUpperCase()}
               </div>
             )}
           </div>
-        )
+        );
       },
       enableSorting: false,
     },
@@ -76,21 +86,31 @@ export function getProductColumns({ onDelete, onStatusChange }: ProductColumnsOp
       accessorKey: "status",
       header: "Trạng thái",
       cell: ({ row }) => {
-        const status = row.original.status
+        const status = row.original.status;
         return (
           <Badge
-            variant={status === "PUBLISHED" ? "default" : status === "DRAFT" ? "secondary" : "outline"}
+            variant={
+              status === "PUBLISHED"
+                ? "default"
+                : status === "DRAFT"
+                  ? "secondary"
+                  : "outline"
+            }
             className={
               status === "PUBLISHED"
                 ? "bg-green-500 hover:bg-green-600"
                 : status === "DRAFT"
-                ? "bg-yellow-500 hover:bg-yellow-600 text-white"
-                : ""
+                  ? "bg-yellow-500 hover:bg-yellow-600 text-white"
+                  : ""
             }
           >
-            {status === "PUBLISHED" ? "Đã xuất bản" : status === "DRAFT" ? "Bản nháp" : "Đã lưu trữ"}
+            {status === "PUBLISHED"
+              ? "Đã xuất bản"
+              : status === "DRAFT"
+                ? "Bản nháp"
+                : "Đã lưu trữ"}
           </Badge>
-        )
+        );
       },
     },
     {
@@ -107,9 +127,12 @@ export function getProductColumns({ onDelete, onStatusChange }: ProductColumnsOp
         </Button>
       ),
       cell: ({ row }) => {
-        const price = typeof row.original.price === "string" ? Number.parseFloat(row.original.price) : row.original.price
-        const formatted = new Intl.NumberFormat("vi-VN").format(price)
-        return <div className="font-medium">{formatted} ₫</div>
+        const price =
+          typeof row.original.price === "string"
+            ? Number.parseFloat(row.original.price)
+            : row.original.price;
+        const formatted = new Intl.NumberFormat("vi-VN").format(price);
+        return <div className="font-medium">{formatted} ₫</div>;
       },
     },
     {
@@ -138,17 +161,23 @@ export function getProductColumns({ onDelete, onStatusChange }: ProductColumnsOp
               </Link>
             </DropdownMenuItem>
             {row.original.status !== "PUBLISHED" && (
-              <DropdownMenuItem onClick={() => onStatusChange(row.original, "PUBLISHED")}>
+              <DropdownMenuItem
+                onClick={() => onStatusChange(row.original, "PUBLISHED")}
+              >
                 Xuất bản
               </DropdownMenuItem>
             )}
             {row.original.status !== "DRAFT" && (
-              <DropdownMenuItem onClick={() => onStatusChange(row.original, "DRAFT")}>
+              <DropdownMenuItem
+                onClick={() => onStatusChange(row.original, "DRAFT")}
+              >
                 Chuyển về nháp
               </DropdownMenuItem>
             )}
             {row.original.status !== "ARCHIVED" && (
-              <DropdownMenuItem onClick={() => onStatusChange(row.original, "ARCHIVED")}>
+              <DropdownMenuItem
+                onClick={() => onStatusChange(row.original, "ARCHIVED")}
+              >
                 Lưu trữ
               </DropdownMenuItem>
             )}
@@ -163,5 +192,5 @@ export function getProductColumns({ onDelete, onStatusChange }: ProductColumnsOp
         </DropdownMenu>
       ),
     },
-  ]
+  ];
 }

@@ -118,3 +118,13 @@ enum ProductStatus {
   PUBLISHED
   ARCHIVED
 }
+
+model SiteConfig {
+  id        String   @id @default("singleton")
+  homepage  Json     @default("{}")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("site_config")
+}
+

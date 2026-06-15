@@ -71,7 +71,7 @@ export default function ImageNodeView({
       document.addEventListener("mousemove", onMouseMove);
       document.addEventListener("mouseup", onMouseUp);
     },
-    [updateAttributes]
+    [updateAttributes],
   );
 
   const handleSaveAlt = useCallback(() => {
@@ -126,7 +126,9 @@ export default function ImageNodeView({
               <button
                 onClick={() => updateAttributes({ align: "left" })}
                 className={`p-1.5 rounded-md transition-colors ${
-                  align === "left" ? "bg-blue-100 text-blue-600" : "text-gray-500 hover:bg-gray-100"
+                  align === "left"
+                    ? "bg-blue-100 text-blue-600"
+                    : "text-gray-500 hover:bg-gray-100"
                 }`}
                 title="Align Left"
               >
@@ -135,7 +137,9 @@ export default function ImageNodeView({
               <button
                 onClick={() => updateAttributes({ align: "center" })}
                 className={`p-1.5 rounded-md transition-colors ${
-                  (align === "center" || !align) ? "bg-blue-100 text-blue-600" : "text-gray-500 hover:bg-gray-100"
+                  align === "center" || !align
+                    ? "bg-blue-100 text-blue-600"
+                    : "text-gray-500 hover:bg-gray-100"
                 }`}
                 title="Align Center"
               >
@@ -144,7 +148,9 @@ export default function ImageNodeView({
               <button
                 onClick={() => updateAttributes({ align: "right" })}
                 className={`p-1.5 rounded-md transition-colors ${
-                  align === "right" ? "bg-blue-100 text-blue-600" : "text-gray-500 hover:bg-gray-100"
+                  align === "right"
+                    ? "bg-blue-100 text-blue-600"
+                    : "text-gray-500 hover:bg-gray-100"
                 }`}
                 title="Align Right"
               >
@@ -158,7 +164,9 @@ export default function ImageNodeView({
                   setShowAltInput(!showAltInput);
                 }}
                 className={`p-1.5 rounded-md transition-colors text-xs font-medium ${
-                  alt ? "text-green-600 hover:bg-green-50" : "text-gray-500 hover:bg-gray-100"
+                  alt
+                    ? "text-green-600 hover:bg-green-50"
+                    : "text-gray-500 hover:bg-gray-100"
                 }`}
                 title="Edit Alt Text"
               >

@@ -71,19 +71,19 @@ export const ImageRow = Node.create({
     return {
       insertImageRow:
         (columns: number) =>
-          ({ commands }) => {
-            const images: ImageRowImage[] = Array.from(
-              { length: columns },
-              () => ({
-                src: "",
-                alt: "",
-              })
-            );
-            return commands.insertContent({
-              type: this.name,
-              attrs: { columns, images },
-            });
-          },
+        ({ commands }) => {
+          const images: ImageRowImage[] = Array.from(
+            { length: columns },
+            () => ({
+              src: "",
+              alt: "",
+            }),
+          );
+          return commands.insertContent({
+            type: this.name,
+            attrs: { columns, images },
+          });
+        },
     };
   },
 

@@ -1,8 +1,8 @@
-import { caller } from '@/trpc/server'
-import React from 'react'
+import { caller } from "@/trpc/server";
+import React from "react";
 
 const Page = async () => {
-  const users = await caller.getUsers()
+  const users = await caller.getUsers();
 
   return (
     <div className="flex flex-1 flex-col gap-4 py-4">
@@ -28,10 +28,12 @@ const Page = async () => {
       </div>
       <div className="min-h-[60vh] flex-1 rounded-xl bg-muted/50 p-6">
         <h2 className="text-lg font-semibold mb-4">Hoạt động gần đây</h2>
-        <p className="text-sm text-muted-foreground">Chưa có hoạt động nào gần đây.</p>
+        <p className="text-sm text-muted-foreground">
+          Chưa có hoạt động nào gần đây.
+        </p>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Page
+export default Page;

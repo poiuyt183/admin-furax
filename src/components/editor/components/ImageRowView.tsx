@@ -22,7 +22,11 @@ export default function ImageRowView({
   deleteNode,
   editor,
 }: NodeViewProps) {
-  const { images, columns, height = 192 } = node.attrs as {
+  const {
+    images,
+    columns,
+    height = 192,
+  } = node.attrs as {
     images: ImageRowImage[];
     columns: number;
     height: number;
@@ -54,8 +58,7 @@ export default function ImageRowView({
           <button
             onClick={() => {
               const newImages = images.slice(0, 2);
-              while (newImages.length < 2)
-                newImages.push({ src: "", alt: "" });
+              while (newImages.length < 2) newImages.push({ src: "", alt: "" });
               updateAttributes({ columns: 2, images: newImages });
             }}
             className={`p-1.5 rounded-md transition-colors text-xs font-medium ${
@@ -70,8 +73,7 @@ export default function ImageRowView({
           <button
             onClick={() => {
               const newImages = [...images];
-              while (newImages.length < 3)
-                newImages.push({ src: "", alt: "" });
+              while (newImages.length < 3) newImages.push({ src: "", alt: "" });
               updateAttributes({ columns: 3, images: newImages.slice(0, 3) });
             }}
             className={`p-1.5 rounded-md transition-colors text-xs font-medium ${
@@ -152,7 +154,7 @@ function ImageCell({
       newImages[index] = { src, alt: alt || newImages[index]?.alt || "" };
       updateAttributes({ images: newImages });
     },
-    [allImages, index, updateAttributes]
+    [allImages, index, updateAttributes],
   );
 
   const removeImage = useCallback(() => {
@@ -168,7 +170,7 @@ function ImageCell({
         updateImage(result.url);
       }
     },
-    [upload, updateImage]
+    [upload, updateImage],
   );
 
   const handleDrop = useCallback(
@@ -180,7 +182,7 @@ function ImageCell({
         handleFileUpload(file);
       }
     },
-    [handleFileUpload]
+    [handleFileUpload],
   );
 
   const handleUrlSubmit = useCallback(() => {
@@ -209,7 +211,7 @@ function ImageCell({
 
         const newWidthPercent = Math.max(
           10,
-          Math.min(90, ((startWidth + diffX) / parentWidth) * 100)
+          Math.min(90, ((startWidth + diffX) / parentWidth) * 100),
         );
         const newHeight = Math.max(80, Math.min(800, startHeight + diffY));
 
@@ -231,7 +233,7 @@ function ImageCell({
 
         const newWidthPercent = Math.max(
           10,
-          Math.min(90, ((startWidth + diffX) / parentWidth) * 100)
+          Math.min(90, ((startWidth + diffX) / parentWidth) * 100),
         );
         const newHeight = Math.max(80, Math.min(800, startHeight + diffY));
 
@@ -247,10 +249,12 @@ function ImageCell({
       document.addEventListener("mousemove", onMouseMove);
       document.addEventListener("mouseup", onMouseUp);
     },
-    [rowHeight, allImages, index, updateAttributes, containerRef]
+    [rowHeight, allImages, index, updateAttributes, containerRef],
   );
 
-  const cellStyle = image.width ? { flex: `0 0 ${image.width}%` } : { flex: "1 1 0%" };
+  const cellStyle = image.width
+    ? { flex: `0 0 ${image.width}%` }
+    : { flex: "1 1 0%" };
 
   // Image is set — show it
   if (image.src) {
@@ -292,7 +296,9 @@ function ImageCell({
 
   // If not editable and empty, just render a blank space or nothing
   if (!isEditable) {
-    return <div style={cellStyle} className="min-w-0 bg-gray-50/50 rounded-lg" />;
+    return (
+      <div style={cellStyle} className="min-w-0 bg-gray-50/50 rounded-lg" />
+    );
   }
 
   // Empty slot — show drop zone
@@ -350,10 +356,7 @@ function ImageCell({
           or paste URL
         </button>
       ) : (
-        <div
-          className="mt-1 flex gap-1"
-          onClick={(e) => e.stopPropagation()}
-        >
+        <div className="mt-1 flex gap-1" onClick={(e) => e.stopPropagation()}>
           <input
             type="url"
             value={urlValue}

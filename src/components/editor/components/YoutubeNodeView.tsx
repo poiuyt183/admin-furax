@@ -3,12 +3,7 @@
 import { NodeViewWrapper } from "@tiptap/react";
 import type { NodeViewProps } from "@tiptap/react";
 import { useState, useRef, useCallback, useMemo } from "react";
-import {
-  GripVertical,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-} from "lucide-react";
+import { GripVertical, AlignLeft, AlignCenter, AlignRight } from "lucide-react";
 
 type Align = "left" | "center" | "right";
 
@@ -90,7 +85,7 @@ export default function YoutubeNodeView({
       document.addEventListener("mousemove", onMouseMove);
       document.addEventListener("mouseup", onMouseUp);
     },
-    [updateAttributes]
+    [updateAttributes],
   );
 
   return (
@@ -141,7 +136,9 @@ export default function YoutubeNodeView({
               <button
                 onClick={() => updateAttributes({ align: "left" })}
                 className={`p-1.5 rounded-md transition-colors ${
-                  align === "left" ? "bg-red-100 text-red-600" : "text-gray-500 hover:bg-gray-100"
+                  align === "left"
+                    ? "bg-red-100 text-red-600"
+                    : "text-gray-500 hover:bg-gray-100"
                 }`}
                 title="Align Left"
               >
@@ -150,7 +147,9 @@ export default function YoutubeNodeView({
               <button
                 onClick={() => updateAttributes({ align: "center" })}
                 className={`p-1.5 rounded-md transition-colors ${
-                  (align === "center" || !align) ? "bg-red-100 text-red-600" : "text-gray-500 hover:bg-gray-100"
+                  align === "center" || !align
+                    ? "bg-red-100 text-red-600"
+                    : "text-gray-500 hover:bg-gray-100"
                 }`}
                 title="Align Center"
               >
@@ -159,7 +158,9 @@ export default function YoutubeNodeView({
               <button
                 onClick={() => updateAttributes({ align: "right" })}
                 className={`p-1.5 rounded-md transition-colors ${
-                  align === "right" ? "bg-red-100 text-red-600" : "text-gray-500 hover:bg-gray-100"
+                  align === "right"
+                    ? "bg-red-100 text-red-600"
+                    : "text-gray-500 hover:bg-gray-100"
                 }`}
                 title="Align Right"
               >

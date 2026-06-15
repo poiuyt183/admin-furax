@@ -303,6 +303,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                 control={form.control}
                 render={({ field }) => (
                   <Select
+                    key={field.value}
                     value={field.value ?? ""}
                     onValueChange={field.onChange}
                   >
@@ -349,6 +350,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                   return (
                     <div className="space-y-2">
                       <Select
+                        key={field.value}
                         value={field.value || "none"}
                         onValueChange={(val) =>
                           field.onChange(val === "none" ? "" : val)

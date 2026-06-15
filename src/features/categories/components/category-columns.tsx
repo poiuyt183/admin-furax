@@ -1,49 +1,56 @@
-"use client"
+"use client";
 
-import { type ColumnDef } from "@tanstack/react-table"
-import { format } from "date-fns"
-import { ArrowUpDown, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { type ColumnDef } from "@tanstack/react-table";
+import { format } from "date-fns";
+import { ArrowUpDown, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 
 type CategoryRow = {
-  id: string
-  name: string
-  slug: string
-  description: string | null
-  image: string | null
-  createdAt: string
-  _count: { products: number }
-}
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  image: string | null;
+  createdAt: string;
+  _count: { products: number };
+};
 
 interface CategoryColumnsOptions {
-  onEdit: (category: CategoryRow) => void
-  onDelete: (category: CategoryRow) => void
+  onEdit: (category: CategoryRow) => void;
+  onDelete: (category: CategoryRow) => void;
 }
 
-export function getCategoryColumns({ onEdit, onDelete }: CategoryColumnsOptions): ColumnDef<CategoryRow>[] {
+export function getCategoryColumns({
+  onEdit,
+  onDelete,
+}: CategoryColumnsOptions): ColumnDef<CategoryRow>[] {
   return [
     {
       accessorKey: "image",
       header: "",
       cell: ({ row }) => {
-        const image = row.original.image
+        const image = row.original.image;
         return (
           <div className="size-10 rounded-lg bg-muted overflow-hidden flex-shrink-0">
             {image ? (
-              <img src={image} alt={row.original.name} className="size-full object-cover" />
+              <img
+                src={image}
+                alt={row.original.name}
+                className="size-full object-cover"
+              />
             ) : (
               <div className="size-full flex items-center justify-center text-xs text-muted-foreground font-medium">
                 {row.original.name.charAt(0).toUpperCase()}
               </div>
             )}
           </div>
-        )
+        );
       },
       enableSorting: false,
     },
@@ -63,7 +70,9 @@ export function getCategoryColumns({ onEdit, onDelete }: CategoryColumnsOptions)
       cell: ({ row }) => (
         <div>
           <div className="font-medium">{row.original.name}</div>
-          <div className="text-xs text-muted-foreground">{row.original.slug}</div>
+          <div className="text-xs text-muted-foreground">
+            {row.original.slug}
+          </div>
         </div>
       ),
     },
@@ -110,5 +119,5 @@ export function getCategoryColumns({ onEdit, onDelete }: CategoryColumnsOptions)
         </DropdownMenu>
       ),
     },
-  ]
+  ];
 }

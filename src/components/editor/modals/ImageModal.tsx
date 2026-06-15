@@ -20,7 +20,11 @@ interface ImageModalProps {
 
 type Tab = "upload" | "url";
 
-export default function ImageModal({ editor, isOpen, onClose }: ImageModalProps) {
+export default function ImageModal({
+  editor,
+  isOpen,
+  onClose,
+}: ImageModalProps) {
   const [activeTab, setActiveTab] = useState<Tab>("upload");
   const [imageUrl, setImageUrl] = useState("");
   const [previewUrl, setPreviewUrl] = useState("");
@@ -41,7 +45,7 @@ export default function ImageModal({ editor, isOpen, onClose }: ImageModalProps)
       editor.chain().focus().setImage({ src: url }).run();
       handleClose();
     },
-    [editor, handleClose]
+    [editor, handleClose],
   );
 
   const handleFileUpload = useCallback(
@@ -51,7 +55,7 @@ export default function ImageModal({ editor, isOpen, onClose }: ImageModalProps)
         insertImage(result.url);
       }
     },
-    [upload, insertImage]
+    [upload, insertImage],
   );
 
   const handleDrop = useCallback(
@@ -63,7 +67,7 @@ export default function ImageModal({ editor, isOpen, onClose }: ImageModalProps)
         handleFileUpload(file);
       }
     },
-    [handleFileUpload]
+    [handleFileUpload],
   );
 
   const handleDragOver = useCallback((e: DragEvent<HTMLDivElement>) => {
@@ -83,7 +87,7 @@ export default function ImageModal({ editor, isOpen, onClose }: ImageModalProps)
         handleFileUpload(file);
       }
     },
-    [handleFileUpload]
+    [handleFileUpload],
   );
 
   const handleUrlSubmit = useCallback(() => {
@@ -102,7 +106,7 @@ export default function ImageModal({ editor, isOpen, onClose }: ImageModalProps)
         setPreviewUrl("");
       }
     },
-    []
+    [],
   );
 
   if (!isOpen) return null;

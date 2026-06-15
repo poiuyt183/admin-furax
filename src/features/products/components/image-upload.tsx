@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import { useCallback, useState } from "react"
-import { ImagePlus, Loader2, X, GripVertical } from "lucide-react"
-import { useCloudinaryUpload } from "@/components/editor/hooks/useCloudinaryUpload"
-import { cn } from "@/lib/utils"
+import { useCallback, useState } from "react";
+import { ImagePlus, Loader2, X, GripVertical } from "lucide-react";
+import { useCloudinaryUpload } from "@/components/editor/hooks/useCloudinaryUpload";
+import { cn } from "@/lib/utils";
 
 interface ImageUploadProps {
-  value?: string
-  onChange: (url: string) => void
-  onRemove?: () => void
-  className?: string
-  aspectRatio?: "square" | "video"
+  value?: string;
+  onChange: (url: string) => void;
+  onRemove?: () => void;
+  className?: string;
+  aspectRatio?: "square" | "video";
 }
 
 export function ImageUpload({
@@ -20,39 +20,39 @@ export function ImageUpload({
   className,
   aspectRatio = "video",
 }: ImageUploadProps) {
-  const { upload, uploading, progress } = useCloudinaryUpload()
+  const { upload, uploading, progress } = useCloudinaryUpload();
 
   const handleUpload = useCallback(
     async (file: File) => {
-      const result = await upload(file)
+      const result = await upload(file);
       if (result) {
-        onChange(result.url)
+        onChange(result.url);
       }
     },
-    [upload, onChange]
-  )
+    [upload, onChange],
+  );
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
-      e.preventDefault()
-      const file = e.dataTransfer.files[0]
+      e.preventDefault();
+      const file = e.dataTransfer.files[0];
       if (file?.type.startsWith("image/")) {
-        handleUpload(file)
+        handleUpload(file);
       }
     },
-    [handleUpload]
-  )
+    [handleUpload],
+  );
 
   const openFilePicker = useCallback(() => {
-    const input = document.createElement("input")
-    input.type = "file"
-    input.accept = "image/*"
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
     input.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0]
-      if (file) handleUpload(file)
-    }
-    input.click()
-  }, [handleUpload])
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) handleUpload(file);
+    };
+    input.click();
+  }, [handleUpload]);
 
   if (value) {
     return (
@@ -60,7 +60,7 @@ export function ImageUpload({
         className={cn(
           "relative rounded-lg overflow-hidden border bg-muted group",
           aspectRatio === "square" ? "aspect-square" : "aspect-video",
-          className
+          className,
         )}
       >
         <img src={value} alt="Upload" className="size-full object-cover" />
@@ -76,7 +76,7 @@ export function ImageUpload({
           )}
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -87,7 +87,7 @@ export function ImageUpload({
       className={cn(
         "relative rounded-lg border-2 border-dashed border-muted-foreground/25 hover:border-muted-foreground/50 transition-colors flex flex-col items-center justify-center gap-2 cursor-pointer",
         aspectRatio === "square" ? "aspect-square" : "aspect-video",
-        className
+        className,
       )}
     >
       {uploading ? (
@@ -98,17 +98,19 @@ export function ImageUpload({
       ) : (
         <>
           <ImagePlus className="size-8 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">Click or drag to upload</span>
+          <span className="text-sm text-muted-foreground">
+            Click or drag to upload
+          </span>
         </>
       )}
     </div>
-  )
+  );
 }
 
 interface MultiImageUploadProps {
-  value: { url: string; alt?: string }[]
-  onChange: (images: { url: string; alt?: string }[]) => void
-  maxImages?: number
+  value: { url: string; alt?: string }[];
+  onChange: (images: { url: string; alt?: string }[]) => void;
+  maxImages?: number;
 }
 
 export function MultiImageUpload({
@@ -116,61 +118,61 @@ export function MultiImageUpload({
   onChange,
   maxImages = 10,
 }: MultiImageUploadProps) {
-  const { upload, uploading, progress } = useCloudinaryUpload()
+  const { upload, uploading, progress } = useCloudinaryUpload();
 
   const handleUpload = useCallback(
     async (file: File) => {
-      const result = await upload(file)
+      const result = await upload(file);
       if (result) {
-        onChange([...value, { url: result.url }])
+        onChange([...value, { url: result.url }]);
       }
     },
-    [upload, onChange, value]
-  )
+    [upload, onChange, value],
+  );
 
   const handleMultiUpload = useCallback(
     async (files: FileList) => {
       for (const file of Array.from(files)) {
         if (file.type.startsWith("image/")) {
-          const result = await upload(file)
+          const result = await upload(file);
           if (result) {
-            value = [...value, { url: result.url }]
-            onChange(value)
+            value = [...value, { url: result.url }];
+            onChange(value);
           }
         }
       }
     },
-    [upload, onChange, value]
-  )
+    [upload, onChange, value],
+  );
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
-      e.preventDefault()
+      e.preventDefault();
       if (e.dataTransfer.files.length > 0) {
-        handleMultiUpload(e.dataTransfer.files)
+        handleMultiUpload(e.dataTransfer.files);
       }
     },
-    [handleMultiUpload]
-  )
+    [handleMultiUpload],
+  );
 
   const handleRemove = useCallback(
     (index: number) => {
-      onChange(value.filter((_, i) => i !== index))
+      onChange(value.filter((_, i) => i !== index));
     },
-    [onChange, value]
-  )
+    [onChange, value],
+  );
 
   const openFilePicker = useCallback(() => {
-    const input = document.createElement("input")
-    input.type = "file"
-    input.accept = "image/*"
-    input.multiple = true
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.multiple = true;
     input.onchange = (e) => {
-      const files = (e.target as HTMLInputElement).files
-      if (files) handleMultiUpload(files)
-    }
-    input.click()
-  }, [handleMultiUpload])
+      const files = (e.target as HTMLInputElement).files;
+      if (files) handleMultiUpload(files);
+    };
+    input.click();
+  }, [handleMultiUpload]);
 
   return (
     <div className="space-y-3">
@@ -180,7 +182,11 @@ export function MultiImageUpload({
             key={`${image.url}-${index}`}
             className="relative aspect-square rounded-lg overflow-hidden border bg-muted group"
           >
-            <img src={image.url} alt={image.alt ?? ""} className="size-full object-cover" />
+            <img
+              src={image.url}
+              alt={image.alt ?? ""}
+              className="size-full object-cover"
+            />
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
               <button
                 type="button"
@@ -203,7 +209,9 @@ export function MultiImageUpload({
             {uploading ? (
               <>
                 <Loader2 className="size-6 text-muted-foreground animate-spin" />
-                <span className="text-xs text-muted-foreground">{progress}%</span>
+                <span className="text-xs text-muted-foreground">
+                  {progress}%
+                </span>
               </>
             ) : (
               <>
@@ -215,5 +223,5 @@ export function MultiImageUpload({
         )}
       </div>
     </div>
-  )
+  );
 }

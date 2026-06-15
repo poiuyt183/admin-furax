@@ -137,11 +137,11 @@ export default function RichEditor({
   const handleCloseImageModal = useCallback(() => setImageModalOpen(false), []);
   const handleOpenYoutubeModal = useCallback(
     () => setYoutubeModalOpen(true),
-    []
+    [],
   );
   const handleCloseYoutubeModal = useCallback(
     () => setYoutubeModalOpen(false),
-    []
+    [],
   );
 
   if (!editor) {
@@ -220,19 +220,21 @@ export default function RichEditor({
         <div className="flex bg-gray-200/50 p-0.5 rounded-lg border border-gray-200/60">
           <button
             onClick={() => setIsPreview(false)}
-            className={`px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 ${!isPreview
-              ? "bg-white text-gray-900 shadow-sm"
-              : "text-gray-500 hover:text-gray-700 hover:bg-gray-200/50"
-              }`}
+            className={`px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 ${
+              !isPreview
+                ? "bg-white text-gray-900 shadow-sm"
+                : "text-gray-500 hover:text-gray-700 hover:bg-gray-200/50"
+            }`}
           >
             Editor
           </button>
           <button
             onClick={() => setIsPreview(true)}
-            className={`px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 ${isPreview
-              ? "bg-white text-gray-900 shadow-sm"
-              : "text-gray-500 hover:text-gray-700 hover:bg-gray-200/50"
-              }`}
+            className={`px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 ${
+              isPreview
+                ? "bg-white text-gray-900 shadow-sm"
+                : "text-gray-500 hover:text-gray-700 hover:bg-gray-200/50"
+            }`}
           >
             HTML
           </button>
