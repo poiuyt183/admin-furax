@@ -366,6 +366,22 @@
   background-color: #dbeafe;
 }
 
+/* Preview pane — reuse editor typography */
+.prose-editor-preview.tiptap {
+  min-height: 400px;
+  padding: 2rem;
+  outline: none;
+  font-size: 1rem;
+  line-height: 1.75;
+  color: #1f2937;
+}
+
+/* Image row layout */
+.tiptap div[data-type="image-row"],
+.tiptap .image-row-node {
+  margin: 1em 0;
+}
+
 /* ─── Modal Animations ─── */
 @keyframes fadeIn {
   from {

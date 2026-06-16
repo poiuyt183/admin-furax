@@ -27,31 +27,54 @@ import Toolbar from "./Toolbar";
 import BubbleMenuBar from "./BubbleMenuBar";
 import ImageModal from "./modals/ImageModal";
 import YoutubeModal from "./modals/YoutubeModal";
+import LinkModal from "./modals/LinkModal";
 
 import { useState, useCallback, useEffect } from "react";
 
+type EditorMode = "edit" | "preview" | "html";
+
 interface RichEditorProps {
+  /** Initial HTML content (uncontrolled) */
   initialContent?: string;
+  /** Controlled HTML content — takes precedence over initialContent */
+  value?: string;
   onChange?: (html: string) => void;
   onBlur?: (html: string) => void;
   placeholder?: string;
   maxCharacters?: number;
+  disabled?: boolean;
   className?: string;
+  showModeToggle?: boolean;
+}
+
+function normalizeHtml(html: string): string {
+  const trimmed = html.trim();
+  if (!trimmed || trimmed === "<p></p>" || trimmed === "<p><br></p>") {
+    return "";
+  }
+  return trimmed;
 }
 
 export default function RichEditor({
   initialContent = "",
+  value,
   onChange,
   onBlur,
   placeholder = "Start writing something amazing...",
   maxCharacters,
+  disabled = false,
   className = "",
+  showModeToggle = true,
 }: RichEditorProps) {
+  const content = value ?? initialContent;
+
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [youtubeModalOpen, setYoutubeModalOpen] = useState(false);
-  const [isPreview, setIsPreview] = useState(false);
+  const [linkModalOpen, setLinkModalOpen] = useState(false);
+  const [mode, setMode] = useState<EditorMode>("edit");
 
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit.configure({
         heading: {
@@ -111,27 +134,40 @@ export default function RichEditor({
       TaskItem.configure({
         nested: true,
       }),
-      // ImageRow,
+      ImageRow as never,
     ],
-    content: initialContent,
+    content,
     editorProps: {
       attributes: {
         class: "tiptap-editor-content",
       },
     },
-    onUpdate: ({ editor }) => {
-      onChange?.(editor.getHTML());
+    onUpdate: ({ editor: ed }) => {
+      onChange?.(ed.getHTML());
     },
-    onBlur: ({ editor }) => {
-      onBlur?.(editor.getHTML());
+    onBlur: ({ editor: ed }) => {
+      onBlur?.(ed.getHTML());
     },
   });
 
+  // Sync external content changes (e.g. form reset when editing existing record)
+  useEffect(() => {
+    if (!editor || editor.isDestroyed) return;
+    if (editor.isFocused) return;
+
+    const incoming = normalizeHtml(content);
+    const current = normalizeHtml(editor.getHTML());
+
+    if (incoming !== current) {
+      editor.commands.setContent(content || "", { emitUpdate: false });
+    }
+  }, [editor, content]);
+
   useEffect(() => {
     if (editor) {
-      editor.setEditable(!isPreview);
+      editor.setEditable(!disabled && mode === "edit");
     }
-  }, [isPreview, editor]);
+  }, [disabled, mode, editor]);
 
   const handleOpenImageModal = useCallback(() => setImageModalOpen(true), []);
   const handleCloseImageModal = useCallback(() => setImageModalOpen(false), []);
@@ -143,6 +179,8 @@ export default function RichEditor({
     () => setYoutubeModalOpen(false),
     [],
   );
+  const handleOpenLinkModal = useCallback(() => setLinkModalOpen(true), []);
+  const handleCloseLinkModal = useCallback(() => setLinkModalOpen(false), []);
 
   if (!editor) {
     return (
@@ -164,36 +202,41 @@ export default function RichEditor({
   const characterCount = editor.storage.characterCount;
   const characters = characterCount?.characters() ?? 0;
   const words = characterCount?.words() ?? 0;
+  const isEditing = mode === "edit" && !disabled;
 
   return (
     <div
-      className={`w-full max-w-[860px] mx-auto rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden transition-shadow duration-200 focus-within:shadow-md focus-within:border-gray-300 ${className}`}
+      className={`w-full max-w-[860px] mx-auto rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden transition-shadow duration-200 focus-within:shadow-md focus-within:border-gray-300 ${disabled ? "opacity-60 pointer-events-none" : ""} ${className}`}
     >
-      {/* Toolbar */}
-      {!isPreview && (
+      {isEditing && (
         <Toolbar
           editor={editor}
           onOpenImageModal={handleOpenImageModal}
           onOpenYoutubeModal={handleOpenYoutubeModal}
+          onOpenLinkModal={handleOpenLinkModal}
         />
       )}
 
-      {/* Bubble Menu */}
-      {!isPreview && <BubbleMenuBar editor={editor} />}
+      {isEditing && <BubbleMenuBar editor={editor} />}
 
-      {/* Editor Content */}
-      <div className={isPreview ? "hidden" : "block"}>
+      {mode === "edit" && (
         <EditorContent editor={editor} className="tiptap-wrapper" />
-      </div>
+      )}
 
-      {/* HTML Output Preview */}
-      {isPreview && (
+      {mode === "preview" && (
+        <div
+          className="tiptap-wrapper tiptap min-h-[400px] p-8 prose-editor-preview"
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: rendered preview of editor HTML
+          dangerouslySetInnerHTML={{ __html: editor.getHTML() }}
+        />
+      )}
+
+      {mode === "html" && (
         <div className="p-6 bg-[#0d1117] text-[#c9d1d9] font-mono text-sm whitespace-pre-wrap break-words min-h-[400px] max-h-[600px] overflow-auto rounded-b-2xl tiptap-html-preview">
           {editor.getHTML()}
         </div>
       )}
 
-      {/* Footer — Character Count */}
       <div className="flex items-center justify-between px-4 py-2 border-t border-gray-100 bg-gray-50/50 text-xs text-gray-400">
         <div className="flex items-center gap-4">
           <span>
@@ -216,32 +259,32 @@ export default function RichEditor({
           </span>
         </div>
 
-        {/* Mode Toggle */}
-        <div className="flex bg-gray-200/50 p-0.5 rounded-lg border border-gray-200/60">
-          <button
-            onClick={() => setIsPreview(false)}
-            className={`px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 ${
-              !isPreview
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-500 hover:text-gray-700 hover:bg-gray-200/50"
-            }`}
-          >
-            Editor
-          </button>
-          <button
-            onClick={() => setIsPreview(true)}
-            className={`px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 ${
-              isPreview
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-500 hover:text-gray-700 hover:bg-gray-200/50"
-            }`}
-          >
-            HTML
-          </button>
-        </div>
+        {showModeToggle && (
+          <div className="flex bg-gray-200/50 p-0.5 rounded-lg border border-gray-200/60">
+            {(
+              [
+                { key: "edit", label: "Editor" },
+                { key: "preview", label: "Preview" },
+                { key: "html", label: "HTML" },
+              ] as const
+            ).map(({ key, label }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setMode(key)}
+                className={`px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 ${
+                  mode === key
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700 hover:bg-gray-200/50"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Modals */}
       <ImageModal
         editor={editor}
         isOpen={imageModalOpen}
@@ -251,6 +294,11 @@ export default function RichEditor({
         editor={editor}
         isOpen={youtubeModalOpen}
         onClose={handleCloseYoutubeModal}
+      />
+      <LinkModal
+        editor={editor}
+        isOpen={linkModalOpen}
+        onClose={handleCloseLinkModal}
       />
     </div>
   );

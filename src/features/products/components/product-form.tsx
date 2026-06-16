@@ -3,13 +3,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod/v4";
-import RichEditor from "@/components/editor/RichEditor";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -27,6 +27,23 @@ import {
   createProductSchema,
 } from "../product.schema";
 import { ImageUpload, MultiImageUpload } from "./image-upload";
+import { ProductFormSkeleton } from "./product-form-skeleton";
+
+const RichEditor = dynamic(() => import("@/components/editor/RichEditor"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full max-w-[860px] mx-auto rounded-2xl border border-gray-200 bg-white overflow-hidden">
+      <div className="h-14 bg-gray-50 border-b border-gray-200 animate-pulse" />
+      <div className="min-h-[400px] p-8">
+        <div className="space-y-3">
+          <div className="h-4 bg-gray-100 rounded w-3/4 animate-pulse" />
+          <div className="h-4 bg-gray-100 rounded w-1/2 animate-pulse" />
+          <div className="h-4 bg-gray-100 rounded w-5/6 animate-pulse" />
+        </div>
+      </div>
+    </div>
+  ),
+});
 
 const PRODUCT_STATUS_OPTIONS = [
   { value: "DRAFT", label: "Bản nháp", indicatorClassName: "bg-yellow-500" },
@@ -39,6 +56,42 @@ const PRODUCT_STATUS_OPTIONS = [
 ] as const;
 
 type ProductFormValues = z.input<typeof createProductSchema>;
+
+const EMPTY_FORM_VALUES: ProductFormValues = {
+  name: "",
+  slug: "",
+  description: "",
+  price: 0,
+  primaryImage: "",
+  status: "DRAFT",
+  categoryId: "",
+  images: [],
+};
+
+function productToFormValues(product: {
+  name: string;
+  slug: string;
+  description: string | null;
+  price: string;
+  primaryImage: string | null;
+  status: ProductFormValues["status"];
+  categoryId: string | null;
+  images: Array<{ url: string; alt: string | null }>;
+}): ProductFormValues {
+  return {
+    name: product.name,
+    slug: product.slug,
+    description: product.description ?? "",
+    price: Number(product.price),
+    primaryImage: product.primaryImage ?? "",
+    status: product.status,
+    categoryId: product.categoryId ?? "",
+    images: product.images.map((img) => ({
+      url: img.url,
+      alt: img.alt ?? "",
+    })),
+  };
+}
 
 function slugify(text: string): string {
   return text
@@ -88,35 +141,9 @@ export function ProductForm({ productId }: ProductFormProps) {
 
   const form = useForm<ProductFormValues, unknown, CreateProductInput>({
     resolver: zodResolver(createProductSchema),
-    defaultValues: {
-      name: "",
-      slug: "",
-      description: "",
-      price: 0,
-      primaryImage: "",
-      status: "DRAFT",
-      categoryId: "",
-      images: [],
-    },
+    defaultValues: EMPTY_FORM_VALUES,
+    values: isEditing && product ? productToFormValues(product) : undefined,
   });
-
-  useEffect(() => {
-    if (product) {
-      form.reset({
-        name: product.name,
-        slug: product.slug,
-        description: product.description ?? "",
-        price: Number(product.price),
-        primaryImage: product.primaryImage ?? "",
-        status: product.status,
-        categoryId: product.categoryId ?? "",
-        images: product.images.map((img) => ({
-          url: img.url,
-          alt: img.alt ?? "",
-        })),
-      });
-    }
-  }, [product, form]);
 
   const watchName = form.watch("name");
   const watchPrice = Number(form.watch("price"));
@@ -167,14 +194,8 @@ export function ProductForm({ productId }: ProductFormProps) {
 
   const isPending = createMutation.isPending || updateMutation.isPending;
 
-  if (isEditing && productLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-pulse text-muted-foreground">
-          Đang tải dữ liệu sản phẩm...
-        </div>
-      </div>
-    );
+  if (isEditing && productLoading && !product) {
+    return <ProductFormSkeleton />;
   }
 
   return (
@@ -275,7 +296,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                 render={({ field }) => (
                   <div className="space-y-2">
                     <RichEditor
-                      initialContent={field.value ?? ""}
+                      value={field.value ?? ""}
                       placeholder="Viết mô tả cho sản phẩm..."
                       onChange={(html) => field.onChange(html)}
                     />

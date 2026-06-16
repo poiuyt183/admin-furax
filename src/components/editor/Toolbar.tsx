@@ -29,12 +29,18 @@ import {
   Unlink,
   Columns2,
   Columns3,
+  Undo2,
+  Redo2,
+  Trash2,
+  Rows3,
+  Columns,
 } from "lucide-react";
 
 interface ToolbarProps {
   editor: Editor;
   onOpenImageModal: () => void;
   onOpenYoutubeModal: () => void;
+  onOpenLinkModal: () => void;
 }
 
 const FONT_FAMILIES = [
@@ -71,20 +77,23 @@ function ToolbarButton({
   isActive = false,
   title,
   children,
+  disabled = false,
   className = "",
 }: {
   onClick: () => void;
   isActive?: boolean;
   title: string;
   children: React.ReactNode;
+  disabled?: boolean;
   className?: string;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       title={title}
-      className={`p-1.5 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-150 shrink-0 ${
+      className={`p-1.5 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all duration-150 shrink-0 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent ${
         isActive
           ? "bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700"
           : ""
@@ -95,30 +104,20 @@ function ToolbarButton({
   );
 }
 
+function isInTable(editor: Editor): boolean {
+  return (
+    editor.isActive("table") ||
+    editor.isActive("tableCell") ||
+    editor.isActive("tableHeader")
+  );
+}
+
 export default function Toolbar({
   editor,
   onOpenImageModal,
   onOpenYoutubeModal,
+  onOpenLinkModal,
 }: ToolbarProps) {
-  const handleSetLink = useCallback(() => {
-    const previousUrl = editor.getAttributes("link").href;
-    const url = window.prompt("Enter URL", previousUrl || "https://");
-
-    if (url === null) return;
-
-    if (url === "") {
-      editor.chain().focus().extendMarkRange("link").unsetLink().run();
-      return;
-    }
-
-    editor
-      .chain()
-      .focus()
-      .extendMarkRange("link")
-      .setLink({ href: url, target: "_blank" })
-      .run();
-  }, [editor]);
-
   const handleInsertTable = useCallback(() => {
     editor
       .chain()
@@ -127,11 +126,45 @@ export default function Toolbar({
       .run();
   }, [editor]);
 
+  const handleInsertImageRow = useCallback(
+    (columns: number) => {
+      const images = Array.from({ length: columns }, () => ({
+        src: "",
+        alt: "",
+      }));
+      editor
+        .chain()
+        .focus()
+        .insertContent({ type: "imageRow", attrs: { columns, images } })
+        .run();
+    },
+    [editor],
+  );
+
   const currentFontFamily = editor.getAttributes("textStyle").fontFamily || "";
   const currentFontSize = editor.getAttributes("textStyle").fontSize || "";
+  const inTable = isInTable(editor);
 
   return (
     <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-gray-200 px-3 py-2 flex flex-wrap items-center gap-0.5">
+      {/* Undo / Redo */}
+      <ToolbarButton
+        onClick={() => editor.chain().focus().undo().run()}
+        disabled={!editor.can().undo()}
+        title="Undo (⌘Z)"
+      >
+        <Undo2 className="w-4 h-4" />
+      </ToolbarButton>
+      <ToolbarButton
+        onClick={() => editor.chain().focus().redo().run()}
+        disabled={!editor.can().redo()}
+        title="Redo (⌘⇧Z)"
+      >
+        <Redo2 className="w-4 h-4" />
+      </ToolbarButton>
+
+      <ToolbarDivider />
+
       {/* Font Family */}
       <select
         value={currentFontFamily}
@@ -372,7 +405,7 @@ export default function Toolbar({
         <Video className="w-4 h-4" />
       </ToolbarButton>
       <ToolbarButton
-        onClick={handleSetLink}
+        onClick={onOpenLinkModal}
         isActive={editor.isActive("link")}
         title="Insert Link"
       >
@@ -395,18 +428,50 @@ export default function Toolbar({
       <ToolbarDivider />
 
       {/* Image Row */}
-      {/* <ToolbarButton
-        onClick={() => editor.chain().focus().insertImageRow(2).run()}
+      <ToolbarButton
+        onClick={() => handleInsertImageRow(2)}
         title="2 images in a row"
       >
         <Columns2 className="w-4 h-4" />
       </ToolbarButton>
       <ToolbarButton
-        onClick={() => editor.chain().focus().insertImageRow(3).run()}
+        onClick={() => handleInsertImageRow(3)}
         title="3 images in a row"
       >
         <Columns3 className="w-4 h-4" />
-      </ToolbarButton> */}
+      </ToolbarButton>
+
+      {/* Table controls — visible when cursor is inside a table */}
+      {inTable && (
+        <>
+          <ToolbarDivider />
+          <ToolbarButton
+            onClick={() => editor.chain().focus().addRowAfter().run()}
+            title="Add Row Below"
+          >
+            <Rows3 className="w-4 h-4" />
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().addColumnAfter().run()}
+            title="Add Column Right"
+          >
+            <Columns className="w-4 h-4" />
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().deleteRow().run()}
+            title="Delete Row"
+          >
+            <Trash2 className="w-4 h-4" />
+          </ToolbarButton>
+          <ToolbarButton
+            onClick={() => editor.chain().focus().deleteTable().run()}
+            title="Delete Table"
+            className="text-red-500 hover:text-red-600 hover:bg-red-50"
+          >
+            <Table className="w-4 h-4" />
+          </ToolbarButton>
+        </>
+      )}
     </div>
   );
 }
