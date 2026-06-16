@@ -87,7 +87,6 @@ export const ImageRow = Node.create({
     };
   },
 
-  // @ts-expect-error — mixed @tiptap/core 3.25/3.26 resolution in node_modules
   addNodeView() {
     return ReactNodeViewRenderer(ImageRowView);
   },

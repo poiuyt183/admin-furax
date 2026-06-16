@@ -26,6 +26,9 @@ importers:
       '@tanstack/react-table':
         specifier: ^8.21.3
         version: 8.21.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@tiptap/core':
+        specifier: ^3.25.0
+        version: 3.26.1(@tiptap/pm@3.26.1)
       '@tiptap/extension-character-count':
         specifier: ^3.25.0
         version: 3.26.1(@tiptap/extensions@3.26.1(@tiptap/core@3.26.1(@tiptap/pm@3.26.1))(@tiptap/pm@3.26.1))
