@@ -11,8 +11,9 @@ import {
   Plus,
   Trash2,
   GripVertical,
+  Video,
 } from "lucide-react";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,6 +35,10 @@ import {
   ProductSelector,
 } from "./featured-selector";
 import type { Banner } from "@/trpc/routers/homepage";
+import {
+  getYoutubeEmbedUrl,
+  isValidYoutubeUrl,
+} from "@/lib/youtube";
 
 function generateId() {
   return Math.random().toString(36).slice(2, 10);
@@ -189,14 +194,27 @@ export function HomepageEditor() {
   const [featuredProductIds, setFeaturedProductIds] = useState<string[]>(
     config?.featuredProductIds ?? [],
   );
+  const [productVideoUrl, setProductVideoUrl] = useState(
+    config?.productVideoUrl ?? "",
+  );
 
   useEffect(() => {
     if (config) {
       setBanners(config.banners ?? []);
       setFeaturedCategoryIds(config.featuredCategoryIds ?? []);
       setFeaturedProductIds(config.featuredProductIds ?? []);
+      setProductVideoUrl(config.productVideoUrl ?? "");
     }
   }, [config]);
+
+  const productVideoEmbedUrl = useMemo(
+    () => getYoutubeEmbedUrl(productVideoUrl),
+    [productVideoUrl],
+  );
+  const productVideoUrlError =
+    productVideoUrl.trim() && !isValidYoutubeUrl(productVideoUrl)
+      ? "Link YouTube không hợp lệ"
+      : null;
 
   const addBanner = () => {
     setBanners((prev) => [
@@ -250,10 +268,16 @@ export function HomepageEditor() {
   };
 
   const handleSave = () => {
+    if (productVideoUrlError) {
+      toast.error(productVideoUrlError);
+      return;
+    }
+
     updateMutation.mutate({
       banners,
       featuredCategoryIds,
       featuredProductIds,
+      productVideoUrl: productVideoUrl.trim(),
     });
   };
 
@@ -367,6 +391,86 @@ export function HomepageEditor() {
                 onChange={setFeaturedProductIds}
               />
             </Suspense>
+          </CardContent>
+        </Card>
+
+        {/* Product Video */}
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-3 space-y-0">
+            <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10">
+              <Video className="size-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <CardTitle className="text-base">Video sản phẩm</CardTitle>
+              <CardDescription>
+                Một video YouTube giới thiệu/review sản phẩm hiển thị trên trang chủ
+              </CardDescription>
+            </div>
+            {productVideoUrl && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setProductVideoUrl("")}
+              >
+                <Trash2 className="size-4" />
+                Xóa video
+              </Button>
+            )}
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="product-video-url">Link YouTube</Label>
+              <div className="relative">
+                <Input
+                  id="product-video-url"
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  value={productVideoUrl}
+                  onChange={(event) => setProductVideoUrl(event.target.value)}
+                  className="pr-10"
+                />
+                {productVideoUrl && productVideoEmbedUrl && (
+                  <a
+                    href={productVideoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    <ExternalLink className="size-4" />
+                  </a>
+                )}
+              </div>
+              {productVideoUrlError ? (
+                <p className="text-xs text-destructive">{productVideoUrlError}</p>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Hỗ trợ link dạng youtube.com/watch, youtu.be, youtube.com/shorts
+                </p>
+              )}
+            </div>
+
+            {productVideoEmbedUrl ? (
+              <div className="overflow-hidden rounded-lg border bg-muted/20">
+                <div className="aspect-video w-full">
+                  <iframe
+                    title="Xem trước video sản phẩm"
+                    src={productVideoEmbedUrl}
+                    className="size-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="flex aspect-video items-center justify-center rounded-lg border border-dashed bg-muted/20">
+                <div className="flex flex-col items-center gap-2 text-center px-4">
+                  <Video className="size-8 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">
+                    Chưa có video. Dán link YouTube để xem trước.
+                  </p>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

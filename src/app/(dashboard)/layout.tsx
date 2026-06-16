@@ -1,5 +1,6 @@
 import { requireAuth } from "@/lib/auth-untils";
 import { AppSidebar } from "@/components/app-sidebar";
+import { NavigationProgress } from "@/components/navigation-progress";
 import {
   SidebarInset,
   SidebarProvider,
@@ -24,6 +25,7 @@ export default async function DashboardLayout({
             <Separator orientation="vertical" className="mr-2 h-4" />
           </div>
         </header>
+        <NavigationProgress />
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">{children}</div>
       </SidebarInset>
     </SidebarProvider>

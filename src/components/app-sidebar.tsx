@@ -13,8 +13,12 @@ import {
   Package,
   FolderTree,
   BadgeCheck,
+  Newspaper,
+  Tags,
+  MapPin,
+  Loader2,
 } from "lucide-react"
-import Link from "next/link"
+import Link, { useLinkStatus } from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 
 import {
@@ -63,6 +67,21 @@ const navMain = [
     url: "/categories",
     icon: FolderTree,
   },
+  {
+    title: "Bài viết",
+    url: "/posts",
+    icon: Newspaper,
+  },
+  {
+    title: "Danh mục bài viết",
+    url: "/post-categories",
+    icon: Tags,
+  },
+  {
+    title: "Cửa hàng",
+    url: "/stores",
+    icon: MapPin,
+  },
 ]
 
 const navSecondary = [
@@ -72,6 +91,38 @@ const navSecondary = [
     icon: Settings,
   },
 ]
+
+function SidebarLinkPending() {
+  const { pending } = useLinkStatus()
+
+  if (!pending) {
+    return null
+  }
+
+  return <Loader2 className="ml-auto size-3.5 animate-spin opacity-70" />
+}
+
+function SidebarNavLink({
+  href,
+  isActive,
+  title,
+  icon: Icon,
+}: {
+  href: string
+  isActive: boolean
+  title: string
+  icon: typeof LayoutDashboard
+}) {
+  return (
+    <SidebarMenuButton asChild isActive={isActive} tooltip={title}>
+      <Link href={href}>
+        <Icon />
+        <span>{title}</span>
+        <SidebarLinkPending />
+      </Link>
+    </SidebarMenuButton>
+  )
+}
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
@@ -116,16 +167,15 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenu>
               {navMain.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname === item.url}
-                    tooltip={item.title}
-                  >
-                    <Link href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
+                  <SidebarNavLink
+                    href={item.url}
+                    title={item.title}
+                    icon={item.icon}
+                    isActive={
+                      pathname === item.url ||
+                      (item.url !== "/" && pathname.startsWith(`${item.url}/`))
+                    }
+                  />
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
@@ -138,16 +188,12 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenu>
               {navSecondary.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
+                  <SidebarNavLink
+                    href={item.url}
+                    title={item.title}
+                    icon={item.icon}
                     isActive={pathname === item.url}
-                    tooltip={item.title}
-                  >
-                    <Link href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
+                  />
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>

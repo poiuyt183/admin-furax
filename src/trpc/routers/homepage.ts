@@ -1,4 +1,5 @@
 import { z } from "zod/v4";
+import { isValidYoutubeUrl } from "@/lib/youtube";
 import prisma from "../../../lib/prisma";
 import { createTRPCRouter, protectedProcedure } from "../init";
 
@@ -13,12 +14,17 @@ const homepageSchema = z.object({
   banners: z.array(bannerSchema).default([]),
   featuredCategoryIds: z.array(z.string()).default([]),
   featuredProductIds: z.array(z.string()).default([]),
+  productVideoUrl: z
+    .string()
+    .default("")
+    .refine(isValidYoutubeUrl, "Link YouTube không hợp lệ"),
 });
 
 const homepageDefault = {
   banners: [],
   featuredCategoryIds: [],
   featuredProductIds: [],
+  productVideoUrl: "",
 };
 
 export type HomepageConfig = z.infer<typeof homepageSchema>;

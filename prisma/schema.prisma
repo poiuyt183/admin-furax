@@ -119,6 +119,45 @@ enum ProductStatus {
   ARCHIVED
 }
 
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model PostCategory {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  image       String?
+  position    Int      @default(0)
+  posts       Post[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("post_category")
+}
+
+model Post {
+  id          String        @id @default(cuid())
+  title       String
+  slug        String        @unique
+  excerpt     String?
+  content     String?       @db.Text
+  coverImage  String?
+  status      PostStatus    @default(DRAFT)
+  publishedAt DateTime?
+  categoryId  String?
+  category    PostCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([categoryId])
+  @@index([status])
+  @@map("post")
+}
+
 model SiteConfig {
   id        String   @id @default("singleton")
   homepage  Json     @default("{}")
@@ -126,5 +165,27 @@ model SiteConfig {
   updatedAt DateTime @updatedAt
 
   @@map("site_config")
+}
+
+model Store {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  address     String
+  city        String
+  district    String
+  phone       String
+  hours       String
+  lat         Float
+  lng         Float
+  isMainStore Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  position    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([city])
+  @@index([isActive])
+  @@map("store")
 }
 

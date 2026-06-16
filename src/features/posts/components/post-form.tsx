@@ -22,13 +22,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useTRPC } from "@/trpc/client";
-import {
-  type CreateProductInput,
-  createProductSchema,
-} from "../product.schema";
-import { ImageUpload, MultiImageUpload } from "./image-upload";
-import { ProductFormSkeleton } from "./product-form-skeleton";
+import { ImageUpload } from "@/features/products/components/image-upload";
+import { type CreatePostInput, createPostSchema } from "../post.schema";
+import { PostFormSkeleton } from "./post-form-skeleton";
 
 const RichEditor = dynamic(() => import("@/components/editor/RichEditor"), {
   ssr: false,
@@ -46,7 +44,7 @@ const RichEditor = dynamic(() => import("@/components/editor/RichEditor"), {
   ),
 });
 
-const PRODUCT_STATUS_OPTIONS = [
+const POST_STATUS_OPTIONS = [
   { value: "DRAFT", label: "Bản nháp", indicatorClassName: "bg-yellow-500" },
   {
     value: "PUBLISHED",
@@ -56,41 +54,35 @@ const PRODUCT_STATUS_OPTIONS = [
   { value: "ARCHIVED", label: "Đã lưu trữ", indicatorClassName: "bg-gray-400" },
 ] as const;
 
-type ProductFormValues = z.input<typeof createProductSchema>;
+type PostFormValues = z.input<typeof createPostSchema>;
 
-const EMPTY_FORM_VALUES: ProductFormValues = {
-  name: "",
+const EMPTY_FORM_VALUES: PostFormValues = {
+  title: "",
   slug: "",
-  description: "",
-  price: 0,
-  primaryImage: "",
+  excerpt: "",
+  content: "",
+  coverImage: "",
   status: "DRAFT",
   categoryId: "",
-  images: [],
 };
 
-function productToFormValues(product: {
-  name: string;
+function postToFormValues(post: {
+  title: string;
   slug: string;
-  description: string | null;
-  price: string;
-  primaryImage: string | null;
-  status: ProductFormValues["status"];
+  excerpt: string | null;
+  content: string | null;
+  coverImage: string | null;
+  status: PostFormValues["status"];
   categoryId: string | null;
-  images: Array<{ url: string; alt: string | null }>;
-}): ProductFormValues {
+}): PostFormValues {
   return {
-    name: product.name,
-    slug: product.slug,
-    description: product.description ?? "",
-    price: Number(product.price),
-    primaryImage: product.primaryImage ?? "",
-    status: product.status,
-    categoryId: product.categoryId ?? "",
-    images: product.images.map((img) => ({
-      url: img.url,
-      alt: img.alt ?? "",
-    })),
+    title: post.title,
+    slug: post.slug,
+    excerpt: post.excerpt ?? "",
+    content: post.content ?? "",
+    coverImage: post.coverImage ?? "",
+    status: post.status,
+    categoryId: post.categoryId ?? "",
   };
 }
 
@@ -106,64 +98,58 @@ function slugify(text: string): string {
     .replace(/^-|-$/g, "");
 }
 
-function formatVND(value: number | string): string {
-  const num = typeof value === "string" ? Number.parseFloat(value) : value;
-  if (Number.isNaN(num)) return "";
-  return new Intl.NumberFormat("vi-VN").format(num);
+interface PostFormProps {
+  postId?: string;
 }
 
-interface ProductFormProps {
-  productId?: string;
-}
-
-export function ProductForm({ productId }: ProductFormProps) {
+export function PostForm({ postId }: PostFormProps) {
   const router = useRouter();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-  const isEditing = !!productId;
+  const isEditing = !!postId;
 
-  const { data: product, isLoading: productLoading } = useQuery({
-    ...trpc.product.getById.queryOptions({ id: productId ?? "" }),
+  const { data: post, isLoading: postLoading } = useQuery({
+    ...trpc.post.getById.queryOptions({ id: postId ?? "" }),
     enabled: isEditing,
   });
 
-  const { data: categories = [] } = useQuery(trpc.category.list.queryOptions());
+  const { data: categories = [] } = useQuery(
+    trpc.postCategory.list.queryOptions(),
+  );
 
   const categoryOptions = useMemo(() => {
     if (
-      !product?.category ||
-      categories.some((cat) => cat.id === product.category?.id)
+      !post?.category ||
+      categories.some((cat) => cat.id === post.category?.id)
     ) {
       return categories;
     }
+    return [post.category, ...categories];
+  }, [categories, post?.category]);
 
-    return [product.category, ...categories];
-  }, [categories, product?.category]);
-
-  const form = useForm<ProductFormValues, unknown, CreateProductInput>({
-    resolver: zodResolver(createProductSchema),
+  const form = useForm<PostFormValues, unknown, CreatePostInput>({
+    resolver: zodResolver(createPostSchema),
     defaultValues: EMPTY_FORM_VALUES,
-    values: isEditing && product ? productToFormValues(product) : undefined,
+    values: isEditing && post ? postToFormValues(post) : undefined,
   });
 
-  const watchName = form.watch("name");
-  const watchPrice = Number(form.watch("price"));
+  const watchTitle = form.watch("title");
 
   useEffect(() => {
-    if (!isEditing && watchName) {
-      form.setValue("slug", slugify(watchName));
+    if (!isEditing && watchTitle) {
+      form.setValue("slug", slugify(watchTitle));
     }
-  }, [watchName, isEditing, form]);
+  }, [watchTitle, isEditing, form]);
 
   const createMutation = useMutation(
-    trpc.product.create.mutationOptions({
+    trpc.post.create.mutationOptions({
       onSuccess: () => {
         queryClient.invalidateQueries({
-          queryKey: trpc.product.list.queryKey(),
+          queryKey: trpc.post.list.queryKey(),
         });
-        toast.success("Tạo sản phẩm thành công");
+        toast.success("Tạo bài viết thành công");
         startNavigationProgress();
-        router.push("/products");
+        router.push("/posts");
       },
       onError: (error) => {
         toast.error(error.message);
@@ -172,14 +158,14 @@ export function ProductForm({ productId }: ProductFormProps) {
   );
 
   const updateMutation = useMutation(
-    trpc.product.update.mutationOptions({
+    trpc.post.update.mutationOptions({
       onSuccess: () => {
         queryClient.invalidateQueries({
-          queryKey: trpc.product.list.queryKey(),
+          queryKey: trpc.post.list.queryKey(),
         });
-        toast.success("Cập nhật sản phẩm thành công");
+        toast.success("Cập nhật bài viết thành công");
         startNavigationProgress();
-        router.push("/products");
+        router.push("/posts");
       },
       onError: (error) => {
         toast.error(error.message);
@@ -187,9 +173,9 @@ export function ProductForm({ productId }: ProductFormProps) {
     }),
   );
 
-  const onSubmit = (data: CreateProductInput) => {
-    if (isEditing && productId) {
-      updateMutation.mutate({ id: productId, data });
+  const onSubmit = (data: CreatePostInput) => {
+    if (isEditing && postId) {
+      updateMutation.mutate({ id: postId, data });
     } else {
       createMutation.mutate(data);
     }
@@ -197,8 +183,8 @@ export function ProductForm({ productId }: ProductFormProps) {
 
   const isPending = createMutation.isPending || updateMutation.isPending;
 
-  if (isEditing && productLoading && !product) {
-    return <ProductFormSkeleton />;
+  if (isEditing && postLoading && !post) {
+    return <PostFormSkeleton />;
   }
 
   return (
@@ -206,30 +192,29 @@ export function ProductForm({ productId }: ProductFormProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Button type="button" variant="ghost" size="icon" asChild>
-            <Link href="/products">
+            <Link href="/posts">
               <ArrowLeft className="size-4" />
             </Link>
           </Button>
           <div>
             <h1 className="text-2xl font-bold tracking-tight">
-              {isEditing ? "Chỉnh sửa Sản phẩm" : "Thêm Sản phẩm Mới"}
+              {isEditing ? "Chỉnh sửa Bài viết" : "Thêm Bài viết Mới"}
             </h1>
             <p className="text-sm text-muted-foreground">
               {isEditing
-                ? "Cập nhật thông tin chi tiết của sản phẩm dưới đây."
-                : "Điền các thông tin để tạo sản phẩm mới."}
+                ? "Cập nhật nội dung và thông tin bài viết."
+                : "Soạn thảo và xuất bản bài viết mới."}
             </p>
           </div>
         </div>
         <Button type="submit" disabled={isPending}>
           {isPending && <Loader2 className="size-4 animate-spin" />}
           <Save className="size-4" />
-          {isEditing ? "Lưu thay đổi" : "Tạo sản phẩm"}
+          {isEditing ? "Lưu thay đổi" : "Tạo bài viết"}
         </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left column — main details */}
         <div className="lg:col-span-2 space-y-6">
           <Card>
             <CardHeader>
@@ -237,24 +222,24 @@ export function ProductForm({ productId }: ProductFormProps) {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="prod-name">Tên sản phẩm</Label>
+                <Label htmlFor="post-title">Tiêu đề</Label>
                 <Input
-                  id="prod-name"
-                  placeholder="e.g. Samsung French Door Refrigerator"
-                  {...form.register("name")}
+                  id="post-title"
+                  placeholder="Nhập tiêu đề bài viết"
+                  {...form.register("title")}
                 />
-                {form.formState.errors.name && (
+                {form.formState.errors.title && (
                   <p className="text-xs text-destructive">
-                    {form.formState.errors.name.message}
+                    {form.formState.errors.title.message}
                   </p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="prod-slug">Đường dẫn (Slug)</Label>
+                <Label htmlFor="post-slug">Đường dẫn (Slug)</Label>
                 <Input
-                  id="prod-slug"
-                  placeholder="e.g. samsung-french-door-refrigerator"
+                  id="post-slug"
+                  placeholder="e.g. huong-dan-su-dung"
                   {...form.register("slug")}
                 />
                 {form.formState.errors.slug && (
@@ -265,23 +250,16 @@ export function ProductForm({ productId }: ProductFormProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="prod-price">Giá (VNĐ)</Label>
-                <Input
-                  id="prod-price"
-                  type="number"
-                  placeholder="0"
-                  min="0"
-                  step="1000"
-                  {...form.register("price")}
+                <Label htmlFor="post-excerpt">Tóm tắt</Label>
+                <Textarea
+                  id="post-excerpt"
+                  placeholder="Mô tả ngắn hiển thị ở danh sách bài viết..."
+                  rows={3}
+                  {...form.register("excerpt")}
                 />
-                {form.formState.errors.price && (
+                {form.formState.errors.excerpt && (
                   <p className="text-xs text-destructive">
-                    {form.formState.errors.price.message}
-                  </p>
-                )}
-                {watchPrice > 0 && (
-                  <p className="text-xs text-muted-foreground">
-                    {formatVND(watchPrice)} ₫
+                    {form.formState.errors.excerpt.message}
                   </p>
                 )}
               </div>
@@ -290,22 +268,22 @@ export function ProductForm({ productId }: ProductFormProps) {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Mô tả</CardTitle>
+              <CardTitle className="text-base">Nội dung</CardTitle>
             </CardHeader>
             <CardContent>
               <Controller
-                name="description"
+                name="content"
                 control={form.control}
                 render={({ field }) => (
                   <div className="space-y-2">
                     <RichEditor
                       value={field.value ?? ""}
-                      placeholder="Viết mô tả cho sản phẩm..."
+                      placeholder="Viết nội dung bài viết..."
                       onChange={(html) => field.onChange(html)}
                     />
-                    {form.formState.errors.description && (
+                    {form.formState.errors.content && (
                       <p className="text-xs text-destructive">
-                        {form.formState.errors.description.message}
+                        {form.formState.errors.content.message}
                       </p>
                     )}
                   </div>
@@ -315,7 +293,6 @@ export function ProductForm({ productId }: ProductFormProps) {
           </Card>
         </div>
 
-        {/* Right column — sidebar */}
         <div className="space-y-6">
           <Card>
             <CardHeader>
@@ -334,14 +311,14 @@ export function ProductForm({ productId }: ProductFormProps) {
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Chọn trạng thái">
                         {
-                          PRODUCT_STATUS_OPTIONS.find(
+                          POST_STATUS_OPTIONS.find(
                             (option) => option.value === field.value,
                           )?.label
                         }
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                      {PRODUCT_STATUS_OPTIONS.map((option) => (
+                      {POST_STATUS_OPTIONS.map((option) => (
                         <SelectItem key={option.value} value={option.value}>
                           <div className="flex items-center gap-2">
                             <span
@@ -372,36 +349,27 @@ export function ProductForm({ productId }: ProductFormProps) {
                   );
 
                   return (
-                    <div className="space-y-2">
-                      <Select
-                        key={field.value}
-                        value={field.value || "none"}
-                        onValueChange={(val) =>
-                          field.onChange(val === "none" ? "" : val)
-                        }
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Chọn danh mục">
-                            {selectedCategory?.name ?? "Không có danh mục"}
-                          </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">
-                            Không có danh mục
+                    <Select
+                      key={field.value}
+                      value={field.value || "none"}
+                      onValueChange={(val) =>
+                        field.onChange(val === "none" ? "" : val)
+                      }
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Chọn danh mục">
+                          {selectedCategory?.name ?? "Không có danh mục"}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Không có danh mục</SelectItem>
+                        {categoryOptions.map((cat) => (
+                          <SelectItem key={cat.id} value={cat.id}>
+                            {cat.name}
                           </SelectItem>
-                          {categoryOptions.map((cat) => (
-                            <SelectItem key={cat.id} value={cat.id}>
-                              {cat.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {form.formState.errors.categoryId && (
-                        <p className="text-xs text-destructive">
-                          {form.formState.errors.categoryId.message}
-                        </p>
-                      )}
-                    </div>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   );
                 }}
               />
@@ -410,50 +378,18 @@ export function ProductForm({ productId }: ProductFormProps) {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Ảnh chính</CardTitle>
+              <CardTitle className="text-base">Ảnh bìa</CardTitle>
             </CardHeader>
             <CardContent>
               <Controller
-                name="primaryImage"
+                name="coverImage"
                 control={form.control}
                 render={({ field }) => (
-                  <div className="space-y-2">
-                    <ImageUpload
-                      value={field.value}
-                      onChange={field.onChange}
-                      onRemove={() => field.onChange("")}
-                    />
-                    {form.formState.errors.primaryImage && (
-                      <p className="text-xs text-destructive">
-                        {form.formState.errors.primaryImage.message}
-                      </p>
-                    )}
-                  </div>
-                )}
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Ảnh sản phẩm</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Controller
-                name="images"
-                control={form.control}
-                render={({ field }) => (
-                  <div className="space-y-2">
-                    <MultiImageUpload
-                      value={field.value ?? []}
-                      onChange={field.onChange}
-                    />
-                    {form.formState.errors.images && (
-                      <p className="text-xs text-destructive">
-                        {form.formState.errors.images.message}
-                      </p>
-                    )}
-                  </div>
+                  <ImageUpload
+                    value={field.value}
+                    onChange={field.onChange}
+                    onRemove={() => field.onChange("")}
+                  />
                 )}
               />
             </CardContent>
