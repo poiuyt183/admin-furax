@@ -134,7 +134,6 @@ export default function RichEditor({
       TaskItem.configure({
         nested: true,
       }),
-      ImageRow as never,
     ],
     content,
     editorProps: {
