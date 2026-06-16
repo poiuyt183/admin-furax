@@ -63,7 +63,7 @@ export function ImageUpload({
           className,
         )}
       >
-        <img src={value} alt="Upload" className="size-full object-cover" />
+        <img src={value} alt="Upload" className="size-full object-contain" />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
           {onRemove && (
             <button

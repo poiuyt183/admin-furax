@@ -5,6 +5,7 @@ import { productRouter } from './product';
 import { homepageRouter } from './homepage';
 import { postCategoryRouter } from './post-category';
 import { postRouter } from './post';
+import { settingsRouter } from './settings';
 import { storeRouter } from './store';
 
 export const appRouter = createTRPCRouter({
@@ -19,6 +20,7 @@ export const appRouter = createTRPCRouter({
   category: categoryRouter,
   product: productRouter,
   homepage: homepageRouter,
+  settings: settingsRouter,
   postCategory: postCategoryRouter,
   post: postRouter,
   store: storeRouter,
