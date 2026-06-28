@@ -317,6 +317,14 @@ export function HomepageEditor() {
               <Plus className="size-4" />
               Thêm banner
             </Button>
+            <Button size="sm" onClick={handleSave} disabled={updateMutation.isPending}>
+              {updateMutation.isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Save className="size-4" />
+              )}
+              Lưu
+            </Button>
           </CardHeader>
           <CardContent className="space-y-4">
             {banners.length === 0 ? (
@@ -356,12 +364,20 @@ export function HomepageEditor() {
             <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10">
               <LayoutGrid className="size-5 text-primary" />
             </div>
-            <div>
+            <div className="flex-1">
               <CardTitle className="text-base">Danh mục nổi bật</CardTitle>
               <CardDescription>
                 Các danh mục được hiển thị ưu tiên trên trang chủ
               </CardDescription>
             </div>
+            <Button size="sm" onClick={handleSave} disabled={updateMutation.isPending}>
+              {updateMutation.isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Save className="size-4" />
+              )}
+              Lưu
+            </Button>
           </CardHeader>
           <CardContent>
             <Suspense fallback={<FeaturedSelectorSkeleton />}>
@@ -379,10 +395,18 @@ export function HomepageEditor() {
             <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10">
               <Package className="size-5 text-primary" />
             </div>
-            <div>
+            <div className="flex-1">
               <CardTitle className="text-base">Sản phẩm nổi bật</CardTitle>
               <CardDescription>Các sản phẩm được ghim lên trang chủ</CardDescription>
             </div>
+            <Button size="sm" onClick={handleSave} disabled={updateMutation.isPending}>
+              {updateMutation.isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Save className="size-4" />
+              )}
+              Lưu
+            </Button>
           </CardHeader>
           <CardContent>
             <Suspense fallback={<FeaturedSelectorSkeleton />}>
@@ -417,6 +441,14 @@ export function HomepageEditor() {
                 Xóa video
               </Button>
             )}
+            <Button size="sm" onClick={handleSave} disabled={updateMutation.isPending}>
+              {updateMutation.isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Save className="size-4" />
+              )}
+              Lưu
+            </Button>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
