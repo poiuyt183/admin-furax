@@ -27,7 +27,18 @@ export function ProductFormSkeleton() {
             <CardContent className="space-y-4">
               <FieldSkeleton />
               <FieldSkeleton />
-              <FieldSkeleton className="h-10 w-1/2" />
+              <div className="grid grid-cols-2 gap-4">
+                <FieldSkeleton />
+                <FieldSkeleton />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <FieldSkeleton />
+                <FieldSkeleton />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <FieldSkeleton />
+                <FieldSkeleton />
+              </div>
             </CardContent>
           </Card>
 
@@ -44,6 +55,17 @@ export function ProductFormSkeleton() {
                   <div className="h-4 bg-muted rounded w-5/6 animate-pulse" />
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <div className="h-5 w-40 rounded-md bg-muted animate-pulse" />
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <FieldSkeleton />
+              <FieldSkeleton />
+              <FieldSkeleton />
             </CardContent>
           </Card>
         </div>

@@ -10,6 +10,7 @@ import { createTRPCRouter, protectedProcedure } from "../init";
 function serializeProduct<
   TProduct extends {
     price: { toString: () => string };
+    comparePrice?: { toString: () => string } | null;
     createdAt: Date;
     updatedAt: Date;
   },
@@ -17,10 +18,17 @@ function serializeProduct<
   return {
     ...product,
     price: product.price.toString(),
+    comparePrice: product.comparePrice?.toString() ?? null,
     createdAt: product.createdAt.toISOString(),
     updatedAt: product.updatedAt.toISOString(),
   };
 }
+
+const PRODUCT_INCLUDE = {
+  category: { select: { id: true, name: true } },
+  images: { orderBy: { position: "asc" as const } },
+  specs: { orderBy: { position: "asc" as const } },
+} as const;
 
 export const productRouter = createTRPCRouter({
   list: protectedProcedure
@@ -49,10 +57,7 @@ export const productRouter = createTRPCRouter({
       const products = await prisma.product.findMany({
         where,
         orderBy: { createdAt: "desc" },
-        include: {
-          category: { select: { id: true, name: true } },
-          images: { orderBy: { position: "asc" } },
-        },
+        include: PRODUCT_INCLUDE,
       });
 
       return products.map(serializeProduct);
@@ -63,10 +68,7 @@ export const productRouter = createTRPCRouter({
     .query(async ({ input }) => {
       const product = await prisma.product.findUnique({
         where: { id: input.id },
-        include: {
-          category: { select: { id: true, name: true } },
-          images: { orderBy: { position: "asc" } },
-        },
+        include: PRODUCT_INCLUDE,
       });
       if (!product) {
         throw new TRPCError({
@@ -90,13 +92,18 @@ export const productRouter = createTRPCRouter({
         });
       }
 
-      const { images, ...productData } = input;
+      const { images, specs, ...productData } = input;
 
       const product = await prisma.product.create({
         data: {
           ...productData,
           primaryImage: productData.primaryImage || null,
           categoryId: productData.categoryId || null,
+          brand: productData.brand || null,
+          origin: productData.origin || null,
+          sku: productData.sku || null,
+          warranty: productData.warranty || null,
+          comparePrice: productData.comparePrice ?? null,
           images: images?.length
             ? {
                 create: images.map((img, index) => ({
@@ -106,11 +113,18 @@ export const productRouter = createTRPCRouter({
                 })),
               }
             : undefined,
+          specs: specs?.length
+            ? {
+                create: specs.map((spec, index) => ({
+                  label: spec.label,
+                  value: spec.value,
+                  group: spec.group || null,
+                  position: spec.position ?? index,
+                })),
+              }
+            : undefined,
         },
-        include: {
-          category: { select: { id: true, name: true } },
-          images: { orderBy: { position: "asc" } },
-        },
+        include: PRODUCT_INCLUDE,
       });
 
       return serializeProduct(product);
@@ -141,7 +155,7 @@ export const productRouter = createTRPCRouter({
         }
       }
 
-      const { images, ...productData } = input.data;
+      const { images, specs, ...productData } = input.data;
 
       return prisma.$transaction(async (tx) => {
         if (images !== undefined) {
@@ -158,6 +172,21 @@ export const productRouter = createTRPCRouter({
           }
         }
 
+        if (specs !== undefined) {
+          await tx.productSpec.deleteMany({ where: { productId: input.id } });
+          if (specs?.length) {
+            await tx.productSpec.createMany({
+              data: specs.map((spec, index) => ({
+                label: spec.label,
+                value: spec.value,
+                group: spec.group || null,
+                position: spec.position ?? index,
+                productId: input.id,
+              })),
+            });
+          }
+        }
+
         const updatedProduct = await tx.product.update({
           where: { id: input.id },
           data: {
@@ -166,11 +195,13 @@ export const productRouter = createTRPCRouter({
               productData.primaryImage === "" ? null : productData.primaryImage,
             categoryId:
               productData.categoryId === "" ? null : productData.categoryId,
+            brand: productData.brand === "" ? null : productData.brand,
+            origin: productData.origin === "" ? null : productData.origin,
+            sku: productData.sku === "" ? null : productData.sku,
+            warranty: productData.warranty === "" ? null : productData.warranty,
+            comparePrice: productData.comparePrice ?? undefined,
           },
-          include: {
-            category: { select: { id: true, name: true } },
-            images: { orderBy: { position: "asc" } },
-          },
+          include: PRODUCT_INCLUDE,
         });
 
         return serializeProduct(updatedProduct);

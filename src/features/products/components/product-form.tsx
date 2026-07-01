@@ -2,12 +2,19 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Loader2, Save } from "lucide-react";
+import {
+  ArrowLeft,
+  GripVertical,
+  Loader2,
+  Plus,
+  Save,
+  Trash2,
+} from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod/v4";
 import { Button } from "@/components/ui/button";
@@ -63,10 +70,16 @@ const EMPTY_FORM_VALUES: ProductFormValues = {
   slug: "",
   description: "",
   price: 0,
+  comparePrice: null,
   primaryImage: "",
   status: "DRAFT",
   categoryId: "",
   images: [],
+  specs: [],
+  brand: "",
+  origin: "",
+  sku: "",
+  warranty: "",
 };
 
 function productToFormValues(product: {
@@ -74,16 +87,23 @@ function productToFormValues(product: {
   slug: string;
   description: string | null;
   price: string;
+  comparePrice: string | null;
   primaryImage: string | null;
   status: ProductFormValues["status"];
   categoryId: string | null;
   images: Array<{ url: string; alt: string | null }>;
+  specs: Array<{ label: string; value: string; group: string | null; position: number }>;
+  brand: string | null;
+  origin: string | null;
+  sku: string | null;
+  warranty: string | null;
 }): ProductFormValues {
   return {
     name: product.name,
     slug: product.slug,
     description: product.description ?? "",
     price: Number(product.price),
+    comparePrice: product.comparePrice ? Number(product.comparePrice) : null,
     primaryImage: product.primaryImage ?? "",
     status: product.status,
     categoryId: product.categoryId ?? "",
@@ -91,6 +111,16 @@ function productToFormValues(product: {
       url: img.url,
       alt: img.alt ?? "",
     })),
+    specs: product.specs.map((spec) => ({
+      label: spec.label,
+      value: spec.value,
+      group: spec.group ?? "",
+      position: spec.position,
+    })),
+    brand: product.brand ?? "",
+    origin: product.origin ?? "",
+    sku: product.sku ?? "",
+    warranty: product.warranty ?? "",
   };
 }
 
@@ -146,8 +176,15 @@ export function ProductForm({ productId }: ProductFormProps) {
     values: isEditing && product ? productToFormValues(product) : undefined,
   });
 
+  const { fields: specFields, append: appendSpec, remove: removeSpec } =
+    useFieldArray({
+      control: form.control,
+      name: "specs",
+    });
+
   const watchName = form.watch("name");
   const watchPrice = Number(form.watch("price"));
+  const watchComparePrice = Number(form.watch("comparePrice"));
 
   useEffect(() => {
     if (!isEditing && watchName) {
@@ -203,6 +240,7 @@ export function ProductForm({ productId }: ProductFormProps) {
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Button type="button" variant="ghost" size="icon" asChild>
@@ -229,18 +267,21 @@ export function ProductForm({ productId }: ProductFormProps) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left column — main details */}
+        {/* ─── Left column — main details ─── */}
         <div className="lg:col-span-2 space-y-6">
+
+          {/* Thông tin chung */}
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Thông tin chung</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Name */}
               <div className="space-y-2">
-                <Label htmlFor="prod-name">Tên sản phẩm</Label>
+                <Label htmlFor="prod-name">Tên sản phẩm <span className="text-destructive">*</span></Label>
                 <Input
                   id="prod-name"
-                  placeholder="e.g. Samsung French Door Refrigerator"
+                  placeholder="VD: Samsung French Door Refrigerator"
                   {...form.register("name")}
                 />
                 {form.formState.errors.name && (
@@ -250,11 +291,12 @@ export function ProductForm({ productId }: ProductFormProps) {
                 )}
               </div>
 
+              {/* Slug */}
               <div className="space-y-2">
-                <Label htmlFor="prod-slug">Đường dẫn (Slug)</Label>
+                <Label htmlFor="prod-slug">Đường dẫn (Slug) <span className="text-destructive">*</span></Label>
                 <Input
                   id="prod-slug"
-                  placeholder="e.g. samsung-french-door-refrigerator"
+                  placeholder="VD: samsung-french-door-refrigerator"
                   {...form.register("slug")}
                 />
                 {form.formState.errors.slug && (
@@ -264,33 +306,93 @@ export function ProductForm({ productId }: ProductFormProps) {
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="prod-price">Giá (VNĐ)</Label>
-                <Input
-                  id="prod-price"
-                  type="number"
-                  placeholder="0"
-                  min="0"
-                  step="1000"
-                  {...form.register("price")}
-                />
-                {form.formState.errors.price && (
-                  <p className="text-xs text-destructive">
-                    {form.formState.errors.price.message}
-                  </p>
-                )}
-                {watchPrice > 0 && (
+              {/* Brand + Origin */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="prod-brand">Thương hiệu</Label>
+                  <Input
+                    id="prod-brand"
+                    placeholder="VD: Samsung, LG, Apple..."
+                    {...form.register("brand")}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="prod-origin">Xuất xứ</Label>
+                  <Input
+                    id="prod-origin"
+                    placeholder="VD: Hàn Quốc, Việt Nam..."
+                    {...form.register("origin")}
+                  />
+                </div>
+              </div>
+
+              {/* SKU + Warranty */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="prod-sku">Mã sản phẩm (SKU)</Label>
+                  <Input
+                    id="prod-sku"
+                    placeholder="VD: SAM-RF-001"
+                    {...form.register("sku")}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="prod-warranty">Bảo hành</Label>
+                  <Input
+                    id="prod-warranty"
+                    placeholder="VD: 12 tháng, 2 năm..."
+                    {...form.register("warranty")}
+                  />
+                </div>
+              </div>
+
+              {/* Price + Compare Price */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="prod-price">Giá bán (VNĐ) <span className="text-destructive">*</span></Label>
+                  <Input
+                    id="prod-price"
+                    type="number"
+                    placeholder="0"
+                    min="0"
+                    step="1000"
+                    {...form.register("price")}
+                  />
+                  {form.formState.errors.price && (
+                    <p className="text-xs text-destructive">
+                      {form.formState.errors.price.message}
+                    </p>
+                  )}
+                  {watchPrice > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      {formatVND(watchPrice)} ₫
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="prod-compare-price">Giá gốc (VNĐ)</Label>
+                  <Input
+                    id="prod-compare-price"
+                    type="number"
+                    placeholder="0"
+                    min="0"
+                    step="1000"
+                    {...form.register("comparePrice")}
+                  />
                   <p className="text-xs text-muted-foreground">
-                    {formatVND(watchPrice)} ₫
+                    {watchComparePrice > 0
+                      ? `${formatVND(watchComparePrice)} ₫ — dùng để hiển thị giảm giá`
+                      : "Để trống nếu không có giảm giá"}
                   </p>
-                )}
+                </div>
               </div>
             </CardContent>
           </Card>
 
+          {/* Mô tả */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Mô tả</CardTitle>
+              <CardTitle className="text-base">Mô tả sản phẩm</CardTitle>
             </CardHeader>
             <CardContent>
               <Controller
@@ -300,7 +402,7 @@ export function ProductForm({ productId }: ProductFormProps) {
                   <div className="space-y-2">
                     <RichEditor
                       value={field.value ?? ""}
-                      placeholder="Viết mô tả cho sản phẩm..."
+                      placeholder="Viết mô tả chi tiết cho sản phẩm..."
                       onChange={(html) => field.onChange(html)}
                     />
                     {form.formState.errors.description && (
@@ -313,10 +415,144 @@ export function ProductForm({ productId }: ProductFormProps) {
               />
             </CardContent>
           </Card>
+
+          {/* Thông số kỹ thuật */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-base">Thông số kỹ thuật</CardTitle>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Thêm các thông số như CPU, RAM, dung tích, kích thước...
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    appendSpec({ label: "", value: "", group: "", position: specFields.length })
+                  }
+                >
+                  <Plus className="size-3.5" />
+                  Thêm thông số
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {specFields.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 border-2 border-dashed rounded-xl text-center gap-2">
+                  <p className="text-sm text-muted-foreground">
+                    Chưa có thông số nào.
+                  </p>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() =>
+                      appendSpec({ label: "", value: "", group: "", position: 0 })
+                    }
+                  >
+                    <Plus className="size-3.5" />
+                    Thêm thông số đầu tiên
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {/* Column headers */}
+                  <div className="grid grid-cols-[1.5rem_1fr_1.5fr_1fr_1.5rem] gap-2 px-1">
+                    <span />
+                    <span className="text-xs font-medium text-muted-foreground">Nhóm (tùy chọn)</span>
+                    <span className="text-xs font-medium text-muted-foreground">Tên thông số</span>
+                    <span className="text-xs font-medium text-muted-foreground">Giá trị</span>
+                    <span />
+                  </div>
+
+                  {specFields.map((field, index) => (
+                    <div
+                      key={field.id}
+                      className="grid grid-cols-[1.5rem_1fr_1.5fr_1fr_1.5rem] gap-2 items-start"
+                    >
+                      {/* Drag handle (visual only) */}
+                      <div className="flex items-center justify-center h-9 text-muted-foreground/40 cursor-grab">
+                        <GripVertical className="size-4" />
+                      </div>
+
+                      {/* Group */}
+                      <div>
+                        <Input
+                          placeholder="VD: Hiệu năng"
+                          {...form.register(`specs.${index}.group`)}
+                        />
+                      </div>
+
+                      {/* Label */}
+                      <div>
+                        <Input
+                          placeholder="VD: Bộ vi xử lý"
+                          {...form.register(`specs.${index}.label`)}
+                        />
+                        {form.formState.errors.specs?.[index]?.label && (
+                          <p className="text-xs text-destructive mt-1">
+                            {form.formState.errors.specs[index].label?.message}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Value */}
+                      <div>
+                        <Input
+                          placeholder="VD: Intel Core i7"
+                          {...form.register(`specs.${index}.value`)}
+                        />
+                        {form.formState.errors.specs?.[index]?.value && (
+                          <p className="text-xs text-destructive mt-1">
+                            {form.formState.errors.specs[index].value?.message}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Remove */}
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="size-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => removeSpec(index)}
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </div>
+                  ))}
+
+                  <div className="pt-2 flex justify-end">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-muted-foreground"
+                      onClick={() =>
+                        appendSpec({
+                          label: "",
+                          value: "",
+                          group: specFields[specFields.length - 1]?.group ?? "",
+                          position: specFields.length,
+                        })
+                      }
+                    >
+                      <Plus className="size-3.5" />
+                      Thêm hàng
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Right column — sidebar */}
+        {/* ─── Right column — sidebar ─── */}
         <div className="space-y-6">
+          {/* Trạng thái */}
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Trạng thái</CardTitle>
@@ -358,6 +594,7 @@ export function ProductForm({ productId }: ProductFormProps) {
             </CardContent>
           </Card>
 
+          {/* Danh mục */}
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Danh mục</CardTitle>
@@ -408,6 +645,7 @@ export function ProductForm({ productId }: ProductFormProps) {
             </CardContent>
           </Card>
 
+          {/* Ảnh chính */}
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Ảnh chính</CardTitle>
@@ -434,6 +672,7 @@ export function ProductForm({ productId }: ProductFormProps) {
             </CardContent>
           </Card>
 
+          {/* Ảnh sản phẩm */}
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Ảnh sản phẩm</CardTitle>
