@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTRPC } from "@/trpc/client";
 import { cn } from "@/lib/utils";
+import { getYoutubeThumbnailUrl } from "@/lib/youtube";
 
 interface Item {
   id: string;
@@ -181,4 +182,32 @@ export function ProductSelector({
   }));
 
   return <SelectorUI allItems={items} selectedIds={selectedIds} onChange={onChange} label="sản phẩm" />;
+}
+
+export function ReviewVideoSelector({
+  selectedIds,
+  onChange,
+}: {
+  selectedIds: string[];
+  onChange: (ids: string[]) => void;
+}) {
+  const trpc = useTRPC();
+  const { data: videos } = useSuspenseQuery(
+    trpc.reviewVideo.list.queryOptions({ isActive: true }),
+  );
+
+  const items: Item[] = videos.map((video) => ({
+    id: video.id,
+    name: `${video.title || "Video review"} · ${video.category.name}`,
+    image: getYoutubeThumbnailUrl(video.youtubeUrl),
+  }));
+
+  return (
+    <SelectorUI
+      allItems={items}
+      selectedIds={selectedIds}
+      onChange={onChange}
+      label="video"
+    />
+  );
 }

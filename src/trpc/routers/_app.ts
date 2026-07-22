@@ -5,6 +5,7 @@ import { productRouter } from './product';
 import { homepageRouter } from './homepage';
 import { postCategoryRouter } from './post-category';
 import { postRouter } from './post';
+import { reviewVideoRouter } from './review-video';
 import { settingsRouter } from './settings';
 import { storeRouter } from './store';
 
@@ -23,6 +24,7 @@ export const appRouter = createTRPCRouter({
   settings: settingsRouter,
   postCategory: postCategoryRouter,
   post: postRouter,
+  reviewVideo: reviewVideoRouter,
   store: storeRouter,
 });
 

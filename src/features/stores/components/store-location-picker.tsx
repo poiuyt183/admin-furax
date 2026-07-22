@@ -9,6 +9,7 @@ import {
   useMap,
   useMapEvents,
 } from "react-leaflet";
+import { cn } from "@/lib/utils";
 
 const markerIcon = L.icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
@@ -31,6 +32,7 @@ interface StoreLocationPickerProps {
   onChange: (coords: { lat: number; lng: number }) => void;
   active?: boolean;
   flyTo?: { lat: number; lng: number } | null;
+  className?: string;
 }
 
 function MapResizeHandler({ active }: { active?: boolean }) {
@@ -39,11 +41,17 @@ function MapResizeHandler({ active }: { active?: boolean }) {
   useEffect(() => {
     if (!active) return;
 
-    const timer = window.setTimeout(() => {
-      map.invalidateSize();
-    }, 150);
+    const container = map.getContainer();
+    const invalidate = () => map.invalidateSize();
 
-    return () => window.clearTimeout(timer);
+    const timer = window.setTimeout(invalidate, 150);
+    const observer = new ResizeObserver(invalidate);
+    observer.observe(container);
+
+    return () => {
+      window.clearTimeout(timer);
+      observer.disconnect();
+    };
   }, [active, map]);
 
   return null;
@@ -87,6 +95,7 @@ export function StoreLocationPicker({
   onChange,
   active,
   flyTo,
+  className,
 }: StoreLocationPickerProps) {
   const position = {
     lat: Number.isFinite(lat) ? lat : DEFAULT_CENTER.lat,
@@ -98,7 +107,10 @@ export function StoreLocationPicker({
       center={[position.lat, position.lng]}
       zoom={13}
       scrollWheelZoom
-      className="h-[280px] w-full rounded-lg border border-border z-0"
+      className={cn(
+        "h-[280px] w-full rounded-lg border border-border z-0",
+        className,
+      )}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

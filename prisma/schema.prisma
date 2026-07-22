@@ -74,9 +74,10 @@ model Category {
   slug        String    @unique
   description String?
   image       String?
-  position    Int       @default(0)
+  position    Int           @default(0)
   products    Product[]
-  createdAt   DateTime  @default(now())
+  reviewVideos ReviewVideo[]
+  createdAt   DateTime      @default(now())
   updatedAt   DateTime  @updatedAt
 
   @@map("category")
@@ -209,5 +210,21 @@ model Store {
   @@index([city])
   @@index([isActive])
   @@map("store")
+}
+
+model ReviewVideo {
+  id         String   @id @default(cuid())
+  title      String?
+  youtubeUrl String
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  isActive   Boolean  @default(true)
+  position   Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([isActive])
+  @@map("review_video")
 }
 

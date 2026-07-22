@@ -17,6 +17,7 @@ import {
   Tags,
   MapPin,
   Loader2,
+  Video,
 } from "lucide-react"
 import Link, { useLinkStatus } from "next/link"
 import { usePathname, useRouter } from "next/navigation"
@@ -81,6 +82,11 @@ const navMain = [
     title: "Cửa hàng",
     url: "/stores",
     icon: MapPin,
+  },
+  {
+    title: "Video Review",
+    url: "/review-videos",
+    icon: Video,
   },
 ]
 
