@@ -96,6 +96,7 @@ model Product {
   category     Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   images       ProductImage[]
   specs        ProductSpec[]
+  warrantyActivations WarrantyActivation[]
   // Product details
   brand        String?
   origin       String?
@@ -226,5 +227,35 @@ model ReviewVideo {
   @@index([categoryId])
   @@index([isActive])
   @@map("review_video")
+}
+
+enum WarrantyStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model WarrantyActivation {
+  id              String         @id @default(cuid())
+  customerName    String
+  customerPhone   String
+  customerAddress String         @db.Text
+  productId       String
+  product         Product        @relation(fields: [productId], references: [id], onDelete: Restrict)
+  productSku      String?
+  productName     String
+  status          WarrantyStatus @default(PENDING)
+  adminNote       String?
+  reviewedAt      DateTime?
+  reviewedById    String?
+  startsAt        DateTime?
+  endsAt          DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([customerPhone])
+  @@index([status])
+  @@index([productId])
+  @@map("warranty_activation")
 }
 

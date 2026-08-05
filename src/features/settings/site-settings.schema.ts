@@ -44,10 +44,26 @@ export type SiteSettings = z.infer<typeof siteSettingsSchema>;
 
 export const defaultNavItems: NavItem[] = [
   { id: "nav-home", label: "Trang chủ", href: "/", isActive: true },
-  { id: "nav-video", label: "Video Review", href: "/video-review", isActive: true },
-  { id: "nav-catalogue", label: "Catalogue", href: "/catalogue", isActive: true },
+  {
+    id: "nav-video",
+    label: "Video Review",
+    href: "/video-review",
+    isActive: true,
+  },
+  {
+    id: "nav-catalogue",
+    label: "Catalogue",
+    href: "/catalogue",
+    isActive: true,
+  },
   { id: "nav-stores", label: "Cửa hàng", href: "/cua-hang", isActive: true },
-  { id: "nav-policy", label: "Chính sách", href: "/chinh-sach", isActive: true },
+  { id: "nav-warranty", label: "Bảo hành", href: "/bao-hanh", isActive: true },
+  {
+    id: "nav-policy",
+    label: "Chính sách",
+    href: "/chinh-sach",
+    isActive: true,
+  },
   { id: "nav-news", label: "Tin tức", href: "/tin-tuc", isActive: true },
 ];
 

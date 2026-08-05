@@ -1,27 +1,37 @@
-"use client"
+"use client";
 
 import {
-  LayoutDashboard,
-  Users,
-  Settings,
-  ShieldCheck,
-  BarChart3,
-  FileText,
-  Bell,
-  LogOut,
-  ChevronsUpDown,
-  Package,
-  FolderTree,
   BadgeCheck,
-  Newspaper,
-  Tags,
-  MapPin,
+  BarChart3,
+  Bell,
+  ChevronsUpDown,
+  FileText,
+  FolderTree,
+  LayoutDashboard,
   Loader2,
+  LogOut,
+  MapPin,
+  Newspaper,
+  Package,
+  Settings,
+  Shield,
+  ShieldCheck,
+  Tags,
+  Users,
   Video,
-} from "lucide-react"
-import Link, { useLinkStatus } from "next/link"
-import { usePathname, useRouter } from "next/navigation"
-
+} from "lucide-react";
+import Link, { useLinkStatus } from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Sidebar,
   SidebarContent,
@@ -34,18 +44,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-} from "@/components/ui/sidebar"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { authClient } from "@/lib/auth-client"
+} from "@/components/ui/sidebar";
+import { authClient } from "@/lib/auth-client";
 
 const navMain = [
   {
@@ -88,7 +88,12 @@ const navMain = [
     url: "/review-videos",
     icon: Video,
   },
-]
+  {
+    title: "Bảo hành",
+    url: "/warranties",
+    icon: Shield,
+  },
+];
 
 const navSecondary = [
   {
@@ -96,16 +101,16 @@ const navSecondary = [
     url: "/settings",
     icon: Settings,
   },
-]
+];
 
 function SidebarLinkPending() {
-  const { pending } = useLinkStatus()
+  const { pending } = useLinkStatus();
 
   if (!pending) {
-    return null
+    return null;
   }
 
-  return <Loader2 className="ml-auto size-3.5 animate-spin opacity-70" />
+  return <Loader2 className="ml-auto size-3.5 animate-spin opacity-70" />;
 }
 
 function SidebarNavLink({
@@ -114,10 +119,10 @@ function SidebarNavLink({
   title,
   icon: Icon,
 }: {
-  href: string
-  isActive: boolean
-  title: string
-  icon: typeof LayoutDashboard
+  href: string;
+  isActive: boolean;
+  title: string;
+  icon: typeof LayoutDashboard;
 }) {
   return (
     <SidebarMenuButton asChild isActive={isActive} tooltip={title}>
@@ -127,22 +132,22 @@ function SidebarNavLink({
         <SidebarLinkPending />
       </Link>
     </SidebarMenuButton>
-  )
+  );
 }
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
-  const pathname = usePathname()
-  const router = useRouter()
+  const pathname = usePathname();
+  const router = useRouter();
 
   const handleLogout = () => {
     authClient.signOut({
       fetchOptions: {
         onSuccess: () => {
-          router.push("/login")
+          router.push("/login");
         },
       },
-    })
-  }
+    });
+  };
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -277,5 +282,5 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }

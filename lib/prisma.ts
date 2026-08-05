@@ -14,7 +14,10 @@ function createPrismaClient() {
 }
 
 function isStalePrismaClient(client: PrismaClient) {
-  return typeof client.store?.findMany !== "function";
+  return (
+    typeof client.store?.findMany !== "function" ||
+    typeof client.warrantyActivation?.findMany !== "function"
+  );
 }
 
 function getPrismaClient() {
