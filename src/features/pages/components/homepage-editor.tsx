@@ -36,6 +36,8 @@ import {
   ReviewVideoSelector,
 } from "./featured-selector";
 import type { Banner } from "@/trpc/routers/homepage";
+import { defaultTrustItems, type TrustItem } from "../trust-items";
+import { TrustStripEditor } from "./trust-strip-editor";
 
 function generateId() {
   return Math.random().toString(36).slice(2, 10);
@@ -194,6 +196,9 @@ export function HomepageEditor() {
   const [productVideoIds, setProductVideoIds] = useState<string[]>(
     config?.productVideoIds ?? [],
   );
+  const [trustItems, setTrustItems] = useState<TrustItem[]>(
+    config?.trustItems ?? defaultTrustItems,
+  );
 
   useEffect(() => {
     if (config) {
@@ -201,6 +206,7 @@ export function HomepageEditor() {
       setFeaturedCategoryIds(config.featuredCategoryIds ?? []);
       setFeaturedProductIds(config.featuredProductIds ?? []);
       setProductVideoIds(config.productVideoIds ?? []);
+      setTrustItems(config.trustItems ?? defaultTrustItems);
     }
   }, [config]);
 
@@ -256,11 +262,20 @@ export function HomepageEditor() {
   };
 
   const handleSave = () => {
+    if (trustItems.some((item) => !item.text.trim())) {
+      toast.error("Nội dung dải chạy không được để trống");
+      return;
+    }
+
     updateMutation.mutate({
       banners,
       featuredCategoryIds,
       featuredProductIds,
       productVideoIds,
+      trustItems: trustItems.map((item) => ({
+        ...item,
+        text: item.text.trim(),
+      })),
     });
   };
 
@@ -340,6 +355,13 @@ export function HomepageEditor() {
             )}
           </CardContent>
         </Card>
+
+        <TrustStripEditor
+          items={trustItems}
+          onChange={setTrustItems}
+          onSave={handleSave}
+          isSaving={updateMutation.isPending}
+        />
 
         {/* Featured Categories */}
         <Card>

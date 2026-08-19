@@ -1,4 +1,8 @@
 import { z } from "zod/v4";
+import {
+  defaultTrustItems,
+  TRUST_ICON_KEYS,
+} from "@/features/pages/trust-items";
 import prisma from "../../../lib/prisma";
 import { createTRPCRouter, protectedProcedure } from "../init";
 
@@ -9,11 +13,18 @@ const bannerSchema = z.object({
   isActive: z.boolean(),
 });
 
+const trustItemSchema = z.object({
+  id: z.string(),
+  icon: z.enum(TRUST_ICON_KEYS),
+  text: z.string().max(120),
+});
+
 const homepageSchema = z.object({
   banners: z.array(bannerSchema).default([]),
   featuredCategoryIds: z.array(z.string()).default([]),
   featuredProductIds: z.array(z.string()).default([]),
   productVideoIds: z.array(z.string()).default([]),
+  trustItems: z.array(trustItemSchema).default(defaultTrustItems),
 });
 
 const homepageDefault = {
@@ -21,6 +32,7 @@ const homepageDefault = {
   featuredCategoryIds: [],
   featuredProductIds: [],
   productVideoIds: [],
+  trustItems: defaultTrustItems,
 };
 
 export type HomepageConfig = z.infer<typeof homepageSchema>;
@@ -37,6 +49,12 @@ function parseHomepageConfig(value: unknown): HomepageConfig {
     productVideoIds: Array.isArray(raw.productVideoIds)
       ? raw.productVideoIds
       : [],
+    trustItems: Array.isArray(raw.trustItems)
+      ? raw.trustItems
+          .map((item) => trustItemSchema.safeParse(item))
+          .filter((result) => result.success)
+          .map((result) => result.data)
+      : defaultTrustItems,
   });
 
   return parsed.success ? parsed.data : homepageDefault;
