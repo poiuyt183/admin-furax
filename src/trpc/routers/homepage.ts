@@ -19,13 +19,45 @@ const trustItemSchema = z.object({
   text: z.string().max(120),
 });
 
+const defaultSlot = () => ({ imageUrl: "", link: "", isActive: false });
+const defaultPostDetail = () => ({ left: defaultSlot(), right: defaultSlot() });
+const defaultProductDescription = () => ({ left: defaultSlot(), right: defaultSlot() });
+const defaultSideBannersFactory = () => ({
+  postDetail: defaultPostDetail(),
+  productDescription: defaultProductDescription(),
+});
+
+const sideBannerSlotSchema = z.object({
+  imageUrl: z.string().default(""),
+  link: z.string().default(""),
+  isActive: z.boolean().default(false),
+});
+
+const sideBannersSchema = z.object({
+  postDetail: z.object({
+    left: sideBannerSlotSchema.default(defaultSlot),
+    right: sideBannerSlotSchema.default(defaultSlot),
+  }).default(defaultPostDetail),
+  productDescription: z.object({
+    left: sideBannerSlotSchema.default(defaultSlot),
+    right: sideBannerSlotSchema.default(defaultSlot),
+  }).default(defaultProductDescription),
+}).default(defaultSideBannersFactory);
+
 const homepageSchema = z.object({
   banners: z.array(bannerSchema).default([]),
   featuredCategoryIds: z.array(z.string()).default([]),
   featuredProductIds: z.array(z.string()).default([]),
   productVideoIds: z.array(z.string()).default([]),
   trustItems: z.array(trustItemSchema).default(defaultTrustItems),
+  sideBanners: sideBannersSchema,
 });
+
+const defaultSideBannerSlot = { imageUrl: "", link: "", isActive: false };
+const defaultSideBanners = {
+  postDetail: { left: defaultSideBannerSlot, right: defaultSideBannerSlot },
+  productDescription: { left: defaultSideBannerSlot, right: defaultSideBannerSlot },
+};
 
 const homepageDefault = {
   banners: [],
@@ -33,10 +65,13 @@ const homepageDefault = {
   featuredProductIds: [],
   productVideoIds: [],
   trustItems: defaultTrustItems,
+  sideBanners: defaultSideBanners,
 };
 
 export type HomepageConfig = z.infer<typeof homepageSchema>;
 export type Banner = z.infer<typeof bannerSchema>;
+export type SideBannerSlot = z.infer<typeof sideBannerSlotSchema>;
+export type SideBanners = z.infer<typeof sideBannersSchema>;
 
 function parseHomepageConfig(value: unknown): HomepageConfig {
   const raw =

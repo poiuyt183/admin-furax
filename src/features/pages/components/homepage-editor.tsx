@@ -4,6 +4,7 @@ import { useMutation, useSuspenseQuery, useQueryClient } from "@tanstack/react-q
 import {
   ImageIcon,
   LayoutGrid,
+  LayoutPanelLeft,
   Package,
   Save,
   ExternalLink,
@@ -35,7 +36,7 @@ import {
   ProductSelector,
   ReviewVideoSelector,
 } from "./featured-selector";
-import type { Banner } from "@/trpc/routers/homepage";
+import type { Banner, SideBannerSlot, SideBanners } from "@/trpc/routers/homepage";
 import { defaultTrustItems, type TrustItem } from "../trust-items";
 import { TrustStripEditor } from "./trust-strip-editor";
 
@@ -168,6 +169,70 @@ function BannerItem({
   );
 }
 
+const defaultSideBannerSlot: SideBannerSlot = { imageUrl: "", link: "", isActive: false };
+const defaultSideBannersValue: SideBanners = {
+  postDetail: { left: defaultSideBannerSlot, right: defaultSideBannerSlot },
+  productDescription: { left: defaultSideBannerSlot, right: defaultSideBannerSlot },
+};
+
+function SideBannerSlotEditor({
+  label,
+  slot,
+  onChange,
+}: {
+  label: string;
+  slot: SideBannerSlot;
+  onChange: (s: SideBannerSlot) => void;
+}) {
+  return (
+    <div className="space-y-3 rounded-lg border bg-card p-4">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium">{label}</span>
+        <div className="flex items-center gap-2">
+          <Label htmlFor={`slot-active-${label}`} className="text-xs text-muted-foreground">Hiển thị</Label>
+          <Switch
+            id={`slot-active-${label}`}
+            checked={slot.isActive}
+            onCheckedChange={(v) => onChange({ ...slot, isActive: v })}
+          />
+        </div>
+      </div>
+      <Separator />
+      <div className="space-y-2">
+        <Label>Ảnh banner</Label>
+        <ImageUpload
+          value={slot.imageUrl}
+          onChange={(url) => onChange({ ...slot, imageUrl: url })}
+          onRemove={() => onChange({ ...slot, imageUrl: "" })}
+          aspectRatio="video"
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor={`slot-link-${label}`}>Đường dẫn khi click</Label>
+        <div className="relative">
+          <Input
+            id={`slot-link-${label}`}
+            placeholder="/san-pham hoặc https://..."
+            value={slot.link}
+            onChange={(e) => onChange({ ...slot, link: e.target.value })}
+            className="pr-10"
+          />
+          {slot.link && (
+            <a
+              href={slot.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <ExternalLink className="size-4" />
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function HomepageEditor() {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
@@ -199,6 +264,9 @@ export function HomepageEditor() {
   const [trustItems, setTrustItems] = useState<TrustItem[]>(
     config?.trustItems ?? defaultTrustItems,
   );
+  const [sideBanners, setSideBanners] = useState<SideBanners>(
+    config?.sideBanners ?? defaultSideBannersValue,
+  );
 
   useEffect(() => {
     if (config) {
@@ -207,6 +275,7 @@ export function HomepageEditor() {
       setFeaturedProductIds(config.featuredProductIds ?? []);
       setProductVideoIds(config.productVideoIds ?? []);
       setTrustItems(config.trustItems ?? defaultTrustItems);
+      setSideBanners(config.sideBanners ?? defaultSideBannersValue);
     }
   }, [config]);
 
@@ -276,6 +345,7 @@ export function HomepageEditor() {
         ...item,
         text: item.text.trim(),
       })),
+      sideBanners,
     });
   };
 
@@ -353,6 +423,86 @@ export function HomepageEditor() {
                 ))}
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Side Banners */}
+        <Card>
+          <CardHeader className="flex flex-row items-center gap-3 space-y-0">
+            <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10">
+              <LayoutPanelLeft className="size-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <CardTitle className="text-base">Banner bên trang chi tiết</CardTitle>
+              <CardDescription>
+                Quản lý banner trái/phải trên trang bài viết và mô tả sản phẩm
+              </CardDescription>
+            </div>
+            <Button size="sm" onClick={handleSave} disabled={updateMutation.isPending}>
+              {updateMutation.isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Save className="size-4" />
+              )}
+              Lưu
+            </Button>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Post Detail banners */}
+            <div>
+              <p className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">Trang bài viết (Tin tức)</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <SideBannerSlotEditor
+                  label="Banner Trái"
+                  slot={sideBanners.postDetail.left}
+                  onChange={(s) =>
+                    setSideBanners((prev) => ({
+                      ...prev,
+                      postDetail: { ...prev.postDetail, left: s },
+                    }))
+                  }
+                />
+                <SideBannerSlotEditor
+                  label="Banner Phải"
+                  slot={sideBanners.postDetail.right}
+                  onChange={(s) =>
+                    setSideBanners((prev) => ({
+                      ...prev,
+                      postDetail: { ...prev.postDetail, right: s },
+                    }))
+                  }
+                />
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Product Description banners */}
+            <div>
+              <p className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">Trang sản phẩm (Mô tả)</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <SideBannerSlotEditor
+                  label="Banner Trái"
+                  slot={sideBanners.productDescription.left}
+                  onChange={(s) =>
+                    setSideBanners((prev) => ({
+                      ...prev,
+                      productDescription: { ...prev.productDescription, left: s },
+                    }))
+                  }
+                />
+                <SideBannerSlotEditor
+                  label="Banner Phải"
+                  slot={sideBanners.productDescription.right}
+                  onChange={(s) =>
+                    setSideBanners((prev) => ({
+                      ...prev,
+                      productDescription: { ...prev.productDescription, right: s },
+                    }))
+                  }
+                />
+              </div>
+            </div>
           </CardContent>
         </Card>
 
