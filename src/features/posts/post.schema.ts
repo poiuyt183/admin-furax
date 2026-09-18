@@ -13,6 +13,8 @@ export const createPostSchema = z.object({
   excerpt: z.string().max(500).optional(),
   content: z.string().optional(),
   coverImage: z.string().url().optional().or(z.literal("")),
+  metaTitle: z.string().max(70).optional().or(z.literal("")),
+  metaDescription: z.string().max(200).optional().or(z.literal("")),
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]).default("DRAFT"),
   categoryId: z.string().optional().or(z.literal("")),
 });

@@ -2,11 +2,11 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Loader2, Save } from "lucide-react";
+import { ArrowLeft, Loader2, Save, Search } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod/v4";
@@ -27,6 +27,7 @@ import { useTRPC } from "@/trpc/client";
 import { ImageUpload } from "@/features/products/components/image-upload";
 import { type CreatePostInput, createPostSchema } from "../post.schema";
 import { PostFormSkeleton } from "./post-form-skeleton";
+import { SeoScoreModal } from "./seo-score-modal";
 
 const RichEditor = dynamic(() => import("@/components/editor/RichEditor"), {
   ssr: false,
@@ -62,6 +63,8 @@ const EMPTY_FORM_VALUES: PostFormValues = {
   excerpt: "",
   content: "",
   coverImage: "",
+  metaTitle: "",
+  metaDescription: "",
   status: "DRAFT",
   categoryId: "",
 };
@@ -72,6 +75,8 @@ function postToFormValues(post: {
   excerpt: string | null;
   content: string | null;
   coverImage: string | null;
+  metaTitle: string | null;
+  metaDescription: string | null;
   status: PostFormValues["status"];
   categoryId: string | null;
 }): PostFormValues {
@@ -81,6 +86,8 @@ function postToFormValues(post: {
     excerpt: post.excerpt ?? "",
     content: post.content ?? "",
     coverImage: post.coverImage ?? "",
+    metaTitle: post.metaTitle ?? "",
+    metaDescription: post.metaDescription ?? "",
     status: post.status,
     categoryId: post.categoryId ?? "",
   };
@@ -107,6 +114,7 @@ export function PostForm({ postId }: PostFormProps) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const isEditing = !!postId;
+  const [seoModalOpen, setSeoModalOpen] = useState(false);
 
   const { data: post, isLoading: postLoading } = useQuery({
     ...trpc.post.getById.queryOptions({ id: postId ?? "" }),
@@ -207,11 +215,21 @@ export function PostForm({ postId }: PostFormProps) {
             </p>
           </div>
         </div>
-        <Button type="submit" disabled={isPending}>
-          {isPending && <Loader2 className="size-4 animate-spin" />}
-          <Save className="size-4" />
-          {isEditing ? "Lưu thay đổi" : "Tạo bài viết"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setSeoModalOpen(true)}
+          >
+            <Search className="size-4" />
+            Kiểm tra SEO
+          </Button>
+          <Button type="submit" disabled={isPending}>
+            {isPending && <Loader2 className="size-4 animate-spin" />}
+            <Save className="size-4" />
+            {isEditing ? "Lưu thay đổi" : "Tạo bài viết"}
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -394,8 +412,67 @@ export function PostForm({ postId }: PostFormProps) {
               />
             </CardContent>
           </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">SEO</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="post-meta-title">Meta Title</Label>
+                  <span className="text-xs text-muted-foreground">
+                    {form.watch("metaTitle")?.length ?? 0}/70
+                  </span>
+                </div>
+                <Input
+                  id="post-meta-title"
+                  placeholder="Tiêu đề SEO (mặc định dùng tiêu đề bài viết)"
+                  {...form.register("metaTitle")}
+                />
+                {form.formState.errors.metaTitle && (
+                  <p className="text-xs text-destructive">
+                    {form.formState.errors.metaTitle.message}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="post-meta-desc">Meta Description</Label>
+                  <span className="text-xs text-muted-foreground">
+                    {form.watch("metaDescription")?.length ?? 0}/200
+                  </span>
+                </div>
+                <Textarea
+                  id="post-meta-desc"
+                  placeholder="Mô tả SEO (mặc định dùng tóm tắt)"
+                  rows={3}
+                  {...form.register("metaDescription")}
+                />
+                {form.formState.errors.metaDescription && (
+                  <p className="text-xs text-destructive">
+                    {form.formState.errors.metaDescription.message}
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
+
+      <SeoScoreModal
+        open={seoModalOpen}
+        onOpenChange={setSeoModalOpen}
+        postData={{
+          title: form.getValues("title") ?? "",
+          slug: form.getValues("slug") ?? "",
+          excerpt: form.getValues("excerpt") ?? "",
+          content: form.getValues("content") ?? "",
+          coverImage: form.getValues("coverImage") ?? "",
+          metaTitle: form.getValues("metaTitle") ?? "",
+          metaDescription: form.getValues("metaDescription") ?? "",
+        }}
+      />
     </form>
   );
 }

@@ -33,6 +33,12 @@ function normalizePostFields(
     ...(data.coverImage !== undefined
       ? { coverImage: data.coverImage || null }
       : {}),
+    ...(data.metaTitle !== undefined
+      ? { metaTitle: data.metaTitle || null }
+      : {}),
+    ...(data.metaDescription !== undefined
+      ? { metaDescription: data.metaDescription || null }
+      : {}),
     ...(data.categoryId !== undefined
       ? { categoryId: data.categoryId || null }
       : {}),
@@ -119,7 +125,7 @@ export const postRouter = createTRPCRouter({
         });
       }
 
-      const { title, slug, excerpt, content, coverImage, status, categoryId } =
+      const { title, slug, excerpt, content, coverImage, metaTitle, metaDescription, status, categoryId } =
         input;
 
       const post = await prisma.post.create({
@@ -129,6 +135,8 @@ export const postRouter = createTRPCRouter({
           excerpt: excerpt || null,
           content: content || null,
           coverImage: coverImage || null,
+          metaTitle: metaTitle || null,
+          metaDescription: metaDescription || null,
           status,
           categoryId: categoryId || null,
           publishedAt: resolvePublishedAt(status) ?? null,

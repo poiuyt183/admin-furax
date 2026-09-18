@@ -169,6 +169,8 @@ model Post {
   excerpt     String?
   content     String?       @db.Text
   coverImage  String?
+  metaTitle       String?
+  metaDescription String?
   status      PostStatus    @default(DRAFT)
   publishedAt DateTime?
   categoryId  String?
